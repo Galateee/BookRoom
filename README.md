@@ -68,8 +68,8 @@ booking-app/
 
 ## 📦 Livrables
 
-- ✅ Périmètre fonctionnel ([CONCEPTION.md](../CONCEPTION.md) - Étape 1)
-- ✅ Contrat API écrit ([CONCEPTION.md](../CONCEPTION.md) - Étape 2)
-- ✅ Liste des états par écran ([CONCEPTION.md](../CONCEPTION.md) - Étape 3)
-- ✅ Schéma d'architecture frontend ([CONCEPTION.md](../CONCEPTION.md) - Étape 4)
+- ✅ Périmètre fonctionnel ([CONCEPTION.md](doc/CONCEPTION.md) - Étape 1)
+- ✅ Contrat API écrit ([CONCEPTION.md](doc/CONCEPTION.md) - Étape 2)
+- ✅ Liste des états par écran ([CONCEPTION.md](doc/CONCEPTION.md) - Étape 3)
+- ✅ Schéma d'architecture frontend ([CONCEPTION.md](doc/CONCEPTION.md) - Étape 4)
 - ✅ Frontend implémenté (ce dossier)
