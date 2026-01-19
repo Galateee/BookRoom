@@ -1,0 +1,11 @@
+import './Footer.css';
+
+export function Footer() {
+  return (
+    <footer className="footer">
+      <div className="footer__container">
+        <p className="footer__text">© 2026 BookRoom - Application de réservation de salles</p>
+      </div>
+    </footer>
+  );
+}

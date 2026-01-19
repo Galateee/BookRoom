@@ -1,0 +1,45 @@
+.my-bookings {
+  width: 100%;
+}
+
+.my-bookings__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 2rem 0;
+}
+
+.my-bookings__search {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.my-bookings__form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.my-bookings__list {
+  width: 100%;
+}
+
+.my-bookings__count {
+  color: #6b7280;
+  margin: 0 0 1.5rem 0;
+}
+
+.my-bookings__grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .my-bookings__form {
+    grid-template-columns: 1fr;
+  }
+}
