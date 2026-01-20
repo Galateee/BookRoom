@@ -25,6 +25,7 @@
 .header__nav {
   display: flex;
   gap: 2rem;
+  align-items: center;
 }
 
 .header__link {
@@ -36,4 +37,28 @@
 
 .header__link:hover {
   color: #2563eb;
+}
+
+.header__link--primary {
+  background: #2563eb;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+
+.header__link--primary:hover {
+  background: #1d4ed8;
+  color: white;
+}
+
+.header__user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header__username {
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-weight: 500;
 }
