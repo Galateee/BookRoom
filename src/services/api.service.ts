@@ -2,14 +2,31 @@ import type { ApiResponse, Room, Booking, BookingFormData } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
+let getAuthToken: (() => Promise<string | null>) | null = null;
+
+export function setAuthTokenGetter(getter: () => Promise<string | null>) {
+  getAuthToken = getter;
+}
+
 class ApiService {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
     try {
+      // Récupérer le token Clerk si disponible
+      const token = getAuthToken ? await getAuthToken() : null;
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      };
+
+      // Ajouter le token d'authentification si disponible
+      if (token) {
+        (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...options?.headers,
-        },
+        headers,
+        credentials: 'include',
         ...options,
       });
 
@@ -42,9 +59,64 @@ class ApiService {
     });
   }
 
-  async getBookingsByEmail(email: string): Promise<ApiResponse<Booking[]>> {
-    const params = new URLSearchParams({ email });
-    return this.request<Booking[]>(`/bookings?${params.toString()}`);
+  async getMyBookings(): Promise<ApiResponse<Booking[]>> {
+    return this.request<Booking[]>('/bookings/my-bookings');
+  }
+
+  async cancelBooking(bookingId: string): Promise<ApiResponse<Booking>> {
+    return this.request<Booking>(`/bookings/${bookingId}/cancel`, {
+      method: 'PATCH',
+    });
+  }
+
+  // Admin endpoints
+  async createRoom(roomData: Omit<Room, 'id'>): Promise<ApiResponse<Room>> {
+    return this.request<Room>('/admin/rooms', {
+      method: 'POST',
+      body: JSON.stringify(roomData),
+    });
+  }
+
+  async updateRoom(roomId: string, roomData: Partial<Room>): Promise<ApiResponse<Room>> {
+    return this.request<Room>(`/admin/rooms/${roomId}`, {
+      method: 'PUT',
+      body: JSON.stringify(roomData),
+    });
+  }
+
+  async deleteRoom(roomId: string): Promise<ApiResponse<Room>> {
+    return this.request<Room>(`/admin/rooms/${roomId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getAllBookings(filters?: {
+    status?: string;
+    roomId?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<ApiResponse<Booking[]>> {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.roomId) params.append('roomId', filters.roomId);
+    if (filters?.startDate) params.append('startDate', filters.startDate);
+    if (filters?.endDate) params.append('endDate', filters.endDate);
+
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.request<Booking[]>(`/admin/bookings${query}`);
+  }
+
+  async getStatistics(): Promise<
+    ApiResponse<{
+      totalRooms: number;
+      totalBookings: number;
+      confirmedBookings: number;
+      futureBookings: number;
+      totalRevenue: number;
+      mostBookedRoom: { id: string; name: string; bookingCount: number } | null;
+    }>
+  > {
+    return this.request('/admin/statistics');
   }
 }
 

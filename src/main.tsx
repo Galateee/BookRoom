@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { frFR } from '@clerk/localizations';
+import { ApiAuthProvider } from './components/auth/ApiAuthProvider';
 import './index.css';
 import App from './App.tsx';
 
@@ -16,7 +17,9 @@ if (!PUBLISHABLE_KEY) {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ClerkProvider publishableKey={PUBLISHABLE_KEY} localization={frFR}>
-      <App />
+      <ApiAuthProvider>
+        <App />
+      </ApiAuthProvider>
     </ClerkProvider>
   </StrictMode>
 );

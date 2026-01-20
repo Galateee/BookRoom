@@ -56,6 +56,8 @@ export function BookingForm({ room, selectedDate, selectedSlot, onSuccess }: Boo
 
     if (!formData.startTime || !formData.endTime) {
       newErrors.time = 'Horaires requis';
+    } else if (formData.startTime >= formData.endTime) {
+      newErrors.time = "L'heure de fin doit être après l'heure de début";
     }
 
     setErrors(newErrors);
@@ -94,7 +96,8 @@ export function BookingForm({ room, selectedDate, selectedSlot, onSuccess }: Boo
       parseInt(formData.numberOfPeople) <= room.capacity &&
       formData.date &&
       formData.startTime &&
-      formData.endTime
+      formData.endTime &&
+      formData.startTime < formData.endTime
     );
   };
 
@@ -102,24 +105,10 @@ export function BookingForm({ room, selectedDate, selectedSlot, onSuccess }: Boo
     <div className="booking-form">
       <h2 className="booking-form__title">Réserver cette salle</h2>
 
-      {error && (
-        <div className="booking-form__error">
-          <p className="booking-form__error-message">{error.message}</p>
-          {error.details && (
-            <ul className="booking-form__error-details">
-              {Object.entries(error.details).map(([field, message]) => (
-                <li key={field}>{message}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
       <SlotPicker
         availableSlots={room.availableSlots}
         selectedDate={formData.date}
         selectedStartTime={formData.startTime}
-        selectedEndTime={formData.endTime}
         onSlotSelect={(date, startTime, endTime) => {
           setFormData({ ...formData, date, startTime, endTime });
           setErrors({ ...errors, date: '', time: '' });
@@ -131,7 +120,18 @@ export function BookingForm({ room, selectedDate, selectedSlot, onSuccess }: Boo
           label="Date"
           type="date"
           value={formData.date}
-          onChange={(value) => setFormData({ ...formData, date: value })}
+          onChange={(value) => {
+            setFormData({ ...formData, date: value });
+            // Valider que la date n'est pas dans le passé
+            const today = new Date().toISOString().split('T')[0];
+            if (value && value < today) {
+              setErrors({ ...errors, date: 'La date ne peut pas être dans le passé' });
+            } else if (errors.date) {
+              const newErrors = { ...errors };
+              delete newErrors.date;
+              setErrors(newErrors);
+            }
+          }}
           error={errors.date}
           required
           disabled={loading}
@@ -143,7 +143,17 @@ export function BookingForm({ room, selectedDate, selectedSlot, onSuccess }: Boo
             label="Heure de début"
             type="time"
             value={formData.startTime}
-            onChange={(value) => setFormData({ ...formData, startTime: value })}
+            onChange={(value) => {
+              setFormData({ ...formData, startTime: value });
+              // Valider que startTime < endTime
+              if (value && formData.endTime && value >= formData.endTime) {
+                setErrors({ ...errors, time: "L'heure de début doit être avant l'heure de fin" });
+              } else if (errors.time) {
+                const newErrors = { ...errors };
+                delete newErrors.time;
+                setErrors(newErrors);
+              }
+            }}
             error={errors.time}
             required
             disabled={loading}
@@ -152,7 +162,17 @@ export function BookingForm({ room, selectedDate, selectedSlot, onSuccess }: Boo
             label="Heure de fin"
             type="time"
             value={formData.endTime}
-            onChange={(value) => setFormData({ ...formData, endTime: value })}
+            onChange={(value) => {
+              setFormData({ ...formData, endTime: value });
+              // Valider que endTime > startTime
+              if (value && formData.startTime && value <= formData.startTime) {
+                setErrors({ ...errors, time: "L'heure de fin doit être après l'heure de début" });
+              } else if (errors.time) {
+                const newErrors = { ...errors };
+                delete newErrors.time;
+                setErrors(newErrors);
+              }
+            }}
             error={errors.time}
             required
             disabled={loading}
@@ -173,7 +193,18 @@ export function BookingForm({ room, selectedDate, selectedSlot, onSuccess }: Boo
           label="Email"
           type="email"
           value={formData.customerEmail}
-          onChange={(value) => setFormData({ ...formData, customerEmail: value })}
+          onChange={(value) => {
+            setFormData({ ...formData, customerEmail: value });
+            // Valider le format email en temps réel
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (value && !emailRegex.test(value)) {
+              setErrors({ ...errors, customerEmail: 'Format email invalide' });
+            } else if (errors.customerEmail) {
+              const newErrors = { ...errors };
+              delete newErrors.customerEmail;
+              setErrors(newErrors);
+            }
+          }}
           error={errors.customerEmail}
           placeholder="jean.dupont@example.com"
           required
@@ -195,7 +226,23 @@ export function BookingForm({ room, selectedDate, selectedSlot, onSuccess }: Boo
           label="Nombre de personnes"
           type="number"
           value={formData.numberOfPeople}
-          onChange={(value) => setFormData({ ...formData, numberOfPeople: value })}
+          onChange={(value) => {
+            setFormData({ ...formData, numberOfPeople: value });
+            // Validation en temps réel
+            const numPeople = parseInt(value);
+            if (value && numPeople > room.capacity) {
+              setErrors({
+                ...errors,
+                numberOfPeople: `La capacité maximale est de ${room.capacity} personnes`,
+              });
+            } else if (value && numPeople < 1) {
+              setErrors({ ...errors, numberOfPeople: 'Au moins 1 personne requise' });
+            } else {
+              const newErrors = { ...errors };
+              delete newErrors.numberOfPeople;
+              setErrors(newErrors);
+            }
+          }}
           error={errors.numberOfPeople}
           min={1}
           max={room.capacity}
@@ -212,6 +259,19 @@ export function BookingForm({ room, selectedDate, selectedSlot, onSuccess }: Boo
           </span>
         </div>
 
+        {error && (
+          <div className="booking-form__error">
+            <p className="booking-form__error-message">{error.message}</p>
+            {error.details && (
+              <ul className="booking-form__error-details">
+                {Object.entries(error.details).map(([field, message]) => (
+                  <li key={field}>{message}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
         <Button type="submit" fullWidth disabled={!isFormValid() || loading} loading={loading}>
           {loading ? 'Réservation en cours...' : 'Réserver'}
         </Button>
@@ -224,5 +284,6 @@ function calculatePrice(startTime: string, endTime: string, pricePerHour: number
   const [startHour, startMinute] = startTime.split(':').map(Number);
   const [endHour, endMinute] = endTime.split(':').map(Number);
   const hours = endHour - startHour + (endMinute - startMinute) / 60;
-  return Math.round(hours * pricePerHour);
+  // Retourne 0 si durée négative ou invalide
+  return hours > 0 ? Math.round(hours * pricePerHour) : 0;
 }

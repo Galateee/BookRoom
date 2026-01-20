@@ -6,6 +6,7 @@ import { MyBookings } from './pages/MyBookings';
 import { LandingPage } from './pages/LandingPage';
 import { SignIn } from './pages/SignIn';
 import { SignUp } from './pages/SignUp';
+import AdminDashboard from './pages/AdminDashboard';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 function App() {
@@ -42,6 +43,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <MyBookings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />

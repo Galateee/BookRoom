@@ -29,17 +29,33 @@ export interface BookingFormData {
 }
 
 export interface Booking {
-  bookingId: string;
-  roomId?: string;
-  roomName: string;
+  id: string;
+  bookingId?: string; // Alias pour compatibilité
+  roomId: string;
+  roomName?: string;
+  room?: {
+    id: string;
+    name: string;
+    imageUrl?: string;
+  };
   date: string;
   startTime: string;
   endTime: string;
-  customerName?: string;
-  customerEmail?: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  numberOfPeople: number;
   totalPrice: number;
-  status: 'confirmed' | 'cancelled' | 'completed';
+  status:
+    | 'CONFIRMED'
+    | 'MODIFIED'
+    | 'CANCELLED'
+    | 'COMPLETED'
+    | 'confirmed'
+    | 'cancelled'
+    | 'completed';
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ApiResponse<T> {

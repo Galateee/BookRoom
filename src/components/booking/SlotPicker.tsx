@@ -6,7 +6,6 @@ interface SlotPickerProps {
   availableSlots?: AvailableSlot[];
   selectedDate: string;
   selectedStartTime: string;
-  selectedEndTime: string;
   onSlotSelect: (date: string, startTime: string, endTime: string) => void;
 }
 
@@ -19,9 +18,9 @@ export function SlotPicker({
   const [activeDate, setActiveDate] = useState(selectedDate || availableSlots[0]?.date || '');
 
   const handleSlotClick = (slot: string) => {
-    // Calculer l'heure de fin (1 heure par défaut)
+    // Calculer l'heure de fin (1 heure par défaut, max 23:00)
     const [hour, minute] = slot.split(':').map(Number);
-    const endHour = hour + 1;
+    const endHour = Math.min(hour + 1, 23); // Évite le dépassement à 24h
     const endTime = `${endHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 
     onSlotSelect(activeDate, slot, endTime);

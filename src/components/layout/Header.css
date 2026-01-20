@@ -51,6 +51,19 @@
   color: white;
 }
 
+.header__link--admin {
+  background: #dc2626;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.header__link--admin:hover {
+  background: #b91c1c;
+  color: white;
+}
+
 .header__user {
   display: flex;
   align-items: center;
