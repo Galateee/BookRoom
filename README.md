@@ -173,3 +173,7 @@ L'utilisateur aura maintenant accès au lien **Admin** dans le header.
 - BEM (Block Element Modifier)
 - Variables CSS pour les couleurs et espacements
 - Responsive design (mobile-first)
+
+---
+
+Created with ❤️
