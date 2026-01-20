@@ -790,14 +790,4 @@ docker compose exec api npx prisma db seed
 
 ---
 
-## 📞 Support
-
-Pour toute question ou problème, consultez :
-
-- La documentation Clerk : [clerk.com/docs](https://clerk.com/docs)
-- La documentation Prisma : [prisma.io/docs](https://prisma.io/docs)
-- La documentation Express : [expressjs.com](https://expressjs.com)
-
----
-
-> 📅 Dernière mise à jour : Janvier 2026
+Created with ❤️
