@@ -9,12 +9,25 @@ export interface Room {
   imageUrl: string;
   description?: string;
   images?: string[];
-  availableSlots?: AvailableSlot[];
+  bookedSlots?: BookedSlot[];
 }
 
-export interface AvailableSlot {
+export interface BookedSlot {
   date: string;
-  slots: string[];
+  startTime: string;
+  endTime: string;
+}
+
+export interface TimeSlot {
+  time: string;
+  available: boolean;
+  booked?: boolean;
+}
+
+export interface DayAvailability {
+  date: string;
+  dayOfWeek: string;
+  timeSlots: TimeSlot[];
 }
 
 export interface BookingFormData {

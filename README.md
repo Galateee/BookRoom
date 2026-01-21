@@ -39,7 +39,6 @@ BookRoom/
 │   │       ├── RoomCard.tsx
 │   │       └── SlotPicker.tsx
 │   ├── pages/              # Pages de l'application
-│   │   ├── LandingPage.tsx
 │   │   ├── RoomList.tsx
 │   │   ├── RoomDetail.tsx
 │   │   ├── MyBookings.tsx

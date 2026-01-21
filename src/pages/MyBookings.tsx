@@ -10,11 +10,13 @@ export function MyBookings() {
   const navigate = useNavigate();
   const { data: bookings, loading, error, fetchBookings } = useMyBookings();
 
+  if (loading) {
+    return <LoadingSpinner message="Chargement de vos réservations..." />;
+  }
+
   return (
     <div className="my-bookings">
       <h1 className="my-bookings__title">Mes réservations</h1>
-
-      {loading && <LoadingSpinner message="Chargement de vos réservations..." />}
 
       {error && !loading && (
         <ErrorMessage

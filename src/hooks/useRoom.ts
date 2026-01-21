@@ -10,28 +10,29 @@ interface UseRoomState {
 }
 
 export function useRoom(id: string | undefined) {
-  const [state, setState] = useState<UseRoomState>({
+  const [state, setState] = useState<UseRoomState>(() => ({
     data: null,
-    loading: true,
-    error: null,
+    loading: id ? true : false,
+    error: id ? null : { code: 'INVALID_ID', message: 'ID invalide' },
     success: false,
-  });
+  }));
 
   useEffect(() => {
     if (!id) {
-      setState({
-        data: null,
-        loading: false,
-        error: { code: 'INVALID_ID', message: 'ID invalide' },
-        success: false,
-      });
       return;
     }
 
     const fetchRoom = async () => {
       setState({ data: null, loading: true, error: null, success: false });
 
+      const startTime = Date.now();
       const response = await apiService.getRoomById(id);
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, 500 - elapsed);
+
+      if (remaining > 0) {
+        await new Promise((resolve) => setTimeout(resolve, remaining));
+      }
 
       if (response.success && response.data) {
         setState({

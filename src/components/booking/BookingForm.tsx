@@ -106,79 +106,31 @@ export function BookingForm({ room, selectedDate, selectedSlot, onSuccess }: Boo
       <h2 className="booking-form__title">Réserver cette salle</h2>
 
       <SlotPicker
-        availableSlots={room.availableSlots}
-        selectedDate={formData.date}
-        selectedStartTime={formData.startTime}
+        bookedSlots={room.bookedSlots}
         onSlotSelect={(date, startTime, endTime) => {
           setFormData({ ...formData, date, startTime, endTime });
           setErrors({ ...errors, date: '', time: '' });
         }}
       />
 
-      <form onSubmit={handleSubmit}>
-        <Input
-          label="Date"
-          type="date"
-          value={formData.date}
-          onChange={(value) => {
-            setFormData({ ...formData, date: value });
-            // Valider que la date n'est pas dans le passé
-            const today = new Date().toISOString().split('T')[0];
-            if (value && value < today) {
-              setErrors({ ...errors, date: 'La date ne peut pas être dans le passé' });
-            } else if (errors.date) {
-              const newErrors = { ...errors };
-              delete newErrors.date;
-              setErrors(newErrors);
-            }
-          }}
-          error={errors.date}
-          required
-          disabled={loading}
-          min={new Date().toISOString().split('T')[0]}
-        />
-
-        <div className="booking-form__time-row">
-          <Input
-            label="Heure de début"
-            type="time"
-            value={formData.startTime}
-            onChange={(value) => {
-              setFormData({ ...formData, startTime: value });
-              // Valider que startTime < endTime
-              if (value && formData.endTime && value >= formData.endTime) {
-                setErrors({ ...errors, time: "L'heure de début doit être avant l'heure de fin" });
-              } else if (errors.time) {
-                const newErrors = { ...errors };
-                delete newErrors.time;
-                setErrors(newErrors);
-              }
-            }}
-            error={errors.time}
-            required
-            disabled={loading}
-          />
-          <Input
-            label="Heure de fin"
-            type="time"
-            value={formData.endTime}
-            onChange={(value) => {
-              setFormData({ ...formData, endTime: value });
-              // Valider que endTime > startTime
-              if (value && formData.startTime && value <= formData.startTime) {
-                setErrors({ ...errors, time: "L'heure de fin doit être après l'heure de début" });
-              } else if (errors.time) {
-                const newErrors = { ...errors };
-                delete newErrors.time;
-                setErrors(newErrors);
-              }
-            }}
-            error={errors.time}
-            required
-            disabled={loading}
-          />
+      {formData.date && formData.startTime && formData.endTime && (
+        <div className="booking-form__selected-slot">
+          <div className="booking-form__selected-slot-icon">📅</div>
+          <div className="booking-form__selected-slot-details">
+            <p className="booking-form__selected-slot-title">Créneau sélectionné</p>
+            <p className="booking-form__selected-slot-info">
+              {new Date(formData.date + 'T00:00:00').toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+              })}{' '}
+              de {formData.startTime} à {formData.endTime}
+            </p>
+          </div>
         </div>
+      )}
 
+      <form onSubmit={handleSubmit}>
         <Input
           label="Nom complet"
           value={formData.customerName}

@@ -34,7 +34,14 @@ export function useMyBookings() {
 
     setState({ data: null, loading: true, error: null, success: false });
 
+    const startTime = Date.now();
     const response = await apiService.getMyBookings();
+    const elapsed = Date.now() - startTime;
+    const remaining = Math.max(0, 500 - elapsed);
+
+    if (remaining > 0) {
+      await new Promise((resolve) => setTimeout(resolve, remaining));
+    }
 
     if (response.success && response.data) {
       setState({

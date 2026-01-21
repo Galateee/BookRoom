@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useUser, SignInButton } from '@clerk/clerk-react';
 import { useRoom } from '../hooks/useRoom';
 import { BookingForm } from '../components/booking/BookingForm';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -10,6 +11,7 @@ import './RoomDetail.css';
 export function RoomDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isSignedIn } = useUser();
   const { data: room, loading, error, refetch } = useRoom(id);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
@@ -109,7 +111,20 @@ export function RoomDetail() {
         </div>
 
         <div className="room-detail__booking">
-          <BookingForm room={room} onSuccess={handleBookingSuccess} />
+          {isSignedIn ? (
+            <BookingForm room={room} onSuccess={handleBookingSuccess} />
+          ) : (
+            <div className="room-detail__auth-required">
+              <div className="room-detail__auth-icon">🔒</div>
+              <h3 className="room-detail__auth-title">Connexion requise</h3>
+              <p className="room-detail__auth-message">
+                Vous devez être connecté pour réserver cette salle.
+              </p>
+              <SignInButton mode="modal" fallbackRedirectUrl={window.location.pathname}>
+                <Button>Se connecter</Button>
+              </SignInButton>
+            </div>
+          )}
         </div>
       </div>
     </div>

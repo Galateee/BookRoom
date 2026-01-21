@@ -112,6 +112,36 @@
   height: fit-content;
 }
 
+.room-detail__auth-required {
+  background-color: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.room-detail__auth-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.room-detail__auth-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.room-detail__auth-message {
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
 .room-detail__modal-overlay {
   position: fixed;
   top: 0;
