@@ -1,5 +1,8 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCalendarDay, faClock, faEuroSign } from '@fortawesome/free-solid-svg-icons';
 import type { Booking } from '../../types';
-import './BookingCard.css';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface BookingCardProps {
   booking: Booking;
@@ -19,44 +22,51 @@ export function BookingCard({ booking }: BookingCardProps) {
     return labels[status] || status;
   };
 
-  const getStatusClass = (status: string) => {
-    return `booking-card__status--${status.toLowerCase()}`;
+  const getStatusVariant = (
+    status: string
+  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    const statusLower = status.toLowerCase();
+    if (statusLower === 'confirmed') return 'default';
+    if (statusLower === 'cancelled') return 'destructive';
+    if (statusLower === 'completed') return 'secondary';
+    return 'outline';
   };
 
-  // Récupérer le nom de la salle (soit roomName direct, soit via room.name)
   const roomName = booking.roomName || booking.room?.name || 'Salle inconnue';
 
   return (
-    <div className="booking-card">
-      <div className="booking-card__header">
-        <h3 className="booking-card__room">{roomName}</h3>
-        <span className={`booking-card__status ${getStatusClass(booking.status)}`}>
-          {getStatusLabel(booking.status)}
-        </span>
-      </div>
-      <div className="booking-card__details">
-        <div className="booking-card__detail">
-          <span className="booking-card__label">📅 Date</span>
-          <span className="booking-card__value">
+    <Card className="hover:shadow-lg transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <h3 className="text-lg font-semibold">{roomName}</h3>
+          <Badge variant={getStatusVariant(booking.status)}>{getStatusLabel(booking.status)}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex items-center gap-3 text-sm">
+          <FontAwesomeIcon icon={faCalendarDay} className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">Date</span>
+          <span className="ml-auto font-medium">
             {new Date(booking.date).toLocaleDateString('fr-FR', {
               weekday: 'long',
-              year: 'numeric',
-              month: 'long',
               day: 'numeric',
+              month: 'long',
             })}
           </span>
         </div>
-        <div className="booking-card__detail">
-          <span className="booking-card__label">🕐 Horaires</span>
-          <span className="booking-card__value">
+        <div className="flex items-center gap-3 text-sm">
+          <FontAwesomeIcon icon={faClock} className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">Horaires</span>
+          <span className="ml-auto font-medium">
             {booking.startTime} - {booking.endTime}
           </span>
         </div>
-        <div className="booking-card__detail">
-          <span className="booking-card__label">💰 Prix</span>
-          <span className="booking-card__value">{booking.totalPrice}€</span>
+        <div className="flex items-center gap-3 text-sm">
+          <FontAwesomeIcon icon={faEuroSign} className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">Prix</span>
+          <span className="ml-auto font-semibold text-primary">{booking.totalPrice}€</span>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

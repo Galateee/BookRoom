@@ -1,12 +1,31 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUser, SignInButton } from '@clerk/clerk-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faArrowLeft,
+  faUsers,
+  faEuroSign,
+  faCheck,
+  faLock,
+  faCircleCheck,
+  faCalendarCheck,
+  faHome,
+} from '@fortawesome/free-solid-svg-icons';
 import { useRoom } from '../hooks/useRoom';
 import { BookingForm } from '../components/booking/BookingForm';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { ErrorMessage } from '../components/common/ErrorMessage';
-import { Button } from '../components/common/Button';
-import './RoomDetail.css';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export function RoomDetail() {
   const { id } = useParams<{ id: string }>();
@@ -16,27 +35,53 @@ export function RoomDetail() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   if (loading) {
-    return <LoadingSpinner message="Chargement des informations..." />;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Skeleton className="h-10 w-48 mb-6" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <Skeleton className="h-96 w-full" />
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+          <div>
+            <Skeleton className="h-[600px] w-full" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     if (error.code === 'ROOM_NOT_FOUND') {
       return (
-        <ErrorMessage
-          title="Salle introuvable"
-          message="Cette salle n'existe pas ou n'est plus disponible"
-          onRetry={() => navigate('/rooms')}
-          showRetry={true}
-        />
+        <div className="container mx-auto px-4 py-16">
+          <div className="max-w-md mx-auto text-center">
+            <FontAwesomeIcon
+              icon={faCircleCheck}
+              className="h-16 w-16 text-muted-foreground mb-4"
+            />
+            <h2 className="text-2xl font-bold mb-2">Salle introuvable</h2>
+            <p className="text-muted-foreground mb-6">
+              Cette salle n'existe pas ou n'est plus disponible
+            </p>
+            <Button onClick={() => navigate('/rooms')}>
+              <FontAwesomeIcon icon={faHome} className="h-4 w-4 mr-2" />
+              Retour aux salles
+            </Button>
+          </div>
+        </div>
       );
     }
 
     return (
-      <ErrorMessage
-        title="Impossible de charger les détails de la salle"
-        message={error.message}
-        onRetry={refetch}
-      />
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-md mx-auto text-center">
+          <h2 className="text-2xl font-bold mb-2">Erreur de chargement</h2>
+          <p className="text-muted-foreground mb-6">{error.message}</p>
+          <Button onClick={refetch}>Réessayer</Button>
+        </div>
+      </div>
     );
   }
 
@@ -49,81 +94,122 @@ export function RoomDetail() {
   };
 
   return (
-    <div className="room-detail">
-      {showSuccessModal && (
-        <div className="room-detail__modal-overlay">
-          <div className="room-detail__modal">
-            <div className="room-detail__modal-icon">✓</div>
-            <h2 className="room-detail__modal-title">Réservation confirmée !</h2>
-            <p className="room-detail__modal-message">
+    <div className="container mx-auto px-4 py-8">
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent>
+          <DialogHeader>
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+              <FontAwesomeIcon icon={faCircleCheck} className="h-6 w-6 text-green-600" />
+            </div>
+            <DialogTitle className="text-center">Réservation confirmée !</DialogTitle>
+            <DialogDescription className="text-center">
               Votre réservation pour <strong>{room.name}</strong> a été confirmée. Un email de
               confirmation vous a été envoyé.
-            </p>
-            <div className="room-detail__modal-actions">
-              <Button onClick={() => navigate('/my-bookings')}>Voir mes réservations</Button>
-              <Button variant="secondary" onClick={() => navigate('/rooms')}>
-                Retour à l'accueil
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center gap-2">
+            <Button onClick={() => navigate('/my-bookings')}>
+              <FontAwesomeIcon icon={faCalendarCheck} className="h-4 w-4 mr-2" />
+              Voir mes réservations
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/rooms')}>
+              <FontAwesomeIcon icon={faHome} className="h-4 w-4 mr-2" />
+              Retour à l'accueil
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <button className="room-detail__back" onClick={() => navigate('/rooms')}>
-        ← Retour à la liste
-      </button>
+      <Button variant="ghost" onClick={() => navigate('/rooms')} className="mb-6">
+        <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4 mr-2" />
+        Retour à la liste
+      </Button>
 
-      <div className="room-detail__content">
-        <div className="room-detail__info">
-          <div className="room-detail__image-container">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="space-y-6">
+          <div className="relative h-96 rounded-lg overflow-hidden">
             <img
               src={room.imageUrl || '/placeholder-room.jpg'}
               alt={room.name}
-              className="room-detail__image"
+              className="w-full h-full object-cover"
             />
           </div>
 
-          <h1 className="room-detail__title">{room.name}</h1>
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight mb-4">{room.name}</h1>
 
-          {room.description && <p className="room-detail__description">{room.description}</p>}
+            {room.description && (
+              <p className="text-lg text-muted-foreground mb-6">{room.description}</p>
+            )}
 
-          <div className="room-detail__specs">
-            <div className="room-detail__spec">
-              <span className="room-detail__spec-label">Capacité</span>
-              <span className="room-detail__spec-value">👥 {room.capacity} personnes</span>
-            </div>
-            <div className="room-detail__spec">
-              <span className="room-detail__spec-label">Prix</span>
-              <span className="room-detail__spec-value">💰 {room.pricePerHour}€/heure</span>
-            </div>
-          </div>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                      <FontAwesomeIcon icon={faUsers} className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Capacité</p>
+                      <p className="text-lg font-semibold">{room.capacity} personnes</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <div className="room-detail__equipments">
-            <h3 className="room-detail__subtitle">Équipements</h3>
-            <div className="room-detail__equipment-list">
-              {room.equipments.map((equipment) => (
-                <span key={equipment} className="room-detail__equipment">
-                  ✓ {equipment}
-                </span>
-              ))}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                      <FontAwesomeIcon icon={faEuroSign} className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Prix</p>
+                      <p className="text-lg font-semibold">{room.pricePerHour}€/heure</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Équipements</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {room.equipments.map((equipment) => (
+                    <Badge key={equipment} variant="secondary" className="gap-1.5">
+                      <FontAwesomeIcon icon={faCheck} className="h-3 w-3" />
+                      {equipment}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
-        <div className="room-detail__booking">
+        <div>
           {isSignedIn ? (
             <BookingForm room={room} onSuccess={handleBookingSuccess} />
           ) : (
-            <div className="room-detail__auth-required">
-              <div className="room-detail__auth-icon">🔒</div>
-              <h3 className="room-detail__auth-title">Connexion requise</h3>
-              <p className="room-detail__auth-message">
-                Vous devez être connecté pour réserver cette salle.
-              </p>
-              <SignInButton mode="modal" fallbackRedirectUrl={window.location.pathname}>
-                <Button>Se connecter</Button>
-              </SignInButton>
-            </div>
+            <Card>
+              <CardContent className="pt-6 text-center space-y-4">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                  <FontAwesomeIcon icon={faLock} className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Connexion requise</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Vous devez être connecté pour réserver cette salle.
+                  </p>
+                </div>
+                <SignInButton mode="modal" fallbackRedirectUrl={window.location.pathname}>
+                  <Button className="w-full">Se connecter</Button>
+                </SignInButton>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>

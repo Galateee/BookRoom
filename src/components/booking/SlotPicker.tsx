@@ -1,6 +1,10 @@
 import { useState, useMemo } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCalendarDay, faLightbulb, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import type { BookedSlot, DayAvailability, TimeSlot } from '../../types';
-import './SlotPicker.css';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface SlotPickerProps {
   bookedSlots?: BookedSlot[];
@@ -68,11 +72,13 @@ export function SlotPicker({ bookedSlots = [], onSlotSelect }: SlotPickerProps) 
 
   if (!availability || availability.length === 0) {
     return (
-      <div className="slot-picker-v2">
-        <div className="slot-picker-v2__empty">
-          <p>Aucune disponibilité pour les 7 prochains jours</p>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="py-8">
+          <p className="text-center text-muted-foreground">
+            Aucune disponibilité pour les 7 prochains jours
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -143,87 +149,111 @@ export function SlotPicker({ bookedSlots = [], onSlotSelect }: SlotPickerProps) 
   const activeDay = availability.find((d) => d.date === selectedDay) || availability[0];
 
   return (
-    <div
-      className="slot-picker-v2"
+    <Card
+      className="select-none"
       onMouseUp={handleSlotMouseUp}
       onMouseLeave={() => setIsDragging(false)}
     >
-      <div className="slot-picker-v2__header">
-        <h3 className="slot-picker-v2__title">📅 Sélectionnez votre créneau</h3>
-        <div className="slot-picker-v2__help">
-          <span className="slot-picker-v2__help-icon">💡</span>
-          <span className="slot-picker-v2__help-text">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FontAwesomeIcon icon={faCalendarDay} className="h-5 w-5 text-primary" />
+          Sélectionnez votre créneau
+        </CardTitle>
+        <div className="flex items-start gap-3 mt-4 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-lg">
+          <FontAwesomeIcon icon={faLightbulb} className="h-5 w-5 text-amber-600 mt-0.5" />
+          <p className="text-sm text-amber-900 font-medium leading-relaxed">
             Cliquez et glissez sur les créneaux disponibles pour réserver
-          </span>
+          </p>
         </div>
-      </div>
+      </CardHeader>
 
-      {/* Calendrier des 7 jours */}
-      <div className="slot-picker-v2__days">
-        {availability.map((day) => {
-          const availableCount = day.timeSlots.filter((s) => s.available).length;
-          const isSelected = day.date === selectedDay;
-
-          return (
-            <button
-              key={day.date}
-              onClick={() => handleDayClick(day.date)}
-              className={`slot-picker-v2__day ${isSelected ? 'slot-picker-v2__day--selected' : ''}`}
-              disabled={availableCount === 0}
-            >
-              <span className="slot-picker-v2__day-name">{day.dayOfWeek}</span>
-              <span className="slot-picker-v2__day-date">{formatDate(day.date)}</span>
-              <span className="slot-picker-v2__day-count">
-                {availableCount > 0 ? `${availableCount} créneaux` : 'Complet'}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Grille horaire */}
-      <div className="slot-picker-v2__grid">
-        <div className="slot-picker-v2__grid-header">
-          <h4 className="slot-picker-v2__grid-title">
-            {activeDay.dayOfWeek} {formatDate(activeDay.date)}
-          </h4>
-          {selectedSlots.length > 0 && (
-            <div className="slot-picker-v2__selection-info">
-              <span className="slot-picker-v2__selection-icon">✓</span>
-              <span className="slot-picker-v2__selection-text">
-                {selectedSlots.length}h • {selectedSlots[0]} -{' '}
-                {(() => {
-                  const lastSlot = selectedSlots[selectedSlots.length - 1];
-                  const [h, m] = lastSlot.split(':').map(Number);
-                  return `${(h + 1).toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                })()}
-              </span>
-            </div>
-          )}
-        </div>
-
-        <div className="slot-picker-v2__slots">
-          {activeDay.timeSlots.map((slot) => {
-            const isSelected = selectedDay === activeDay.date && selectedSlots.includes(slot.time);
+      <CardContent className="space-y-6">
+        {/* Calendrier des 7 jours */}
+        <div className="grid grid-cols-7 gap-2">
+          {availability.map((day) => {
+            const availableCount = day.timeSlots.filter((s) => s.available).length;
+            const isSelected = day.date === selectedDay;
 
             return (
               <button
-                key={slot.time}
-                className={`slot-picker-v2__slot 
-                  ${!slot.available ? 'slot-picker-v2__slot--booked' : ''} 
-                  ${isSelected ? 'slot-picker-v2__slot--selected' : ''}
-                  ${slot.available ? 'slot-picker-v2__slot--available' : ''}`}
-                disabled={!slot.available}
-                onMouseDown={() => handleSlotMouseDown(activeDay, slot.time, slot.available)}
-                onMouseEnter={() => handleSlotMouseEnter(activeDay, slot.time, slot.available)}
+                key={day.date}
+                onClick={() => handleDayClick(day.date)}
+                disabled={availableCount === 0}
+                className={cn(
+                  'flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all',
+                  'hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed',
+                  isSelected
+                    ? 'bg-primary/10 border-primary text-primary'
+                    : 'bg-muted/50 border-transparent'
+                )}
               >
-                <span className="slot-picker-v2__slot-time">{slot.time}</span>
-                <span className="slot-picker-v2__slot-status">{slot.available ? '✓' : '✕'}</span>
+                <span className="text-xs font-semibold uppercase tracking-wider">
+                  {day.dayOfWeek}
+                </span>
+                <span className="text-base font-medium">{formatDate(day.date)}</span>
+                <span className="text-xs text-muted-foreground">
+                  {availableCount > 0 ? `${availableCount} créneaux` : 'Complet'}
+                </span>
               </button>
             );
           })}
         </div>
-      </div>
-    </div>
+
+        {/* Grille horaire */}
+        <div className="space-y-4 border-t pt-6">
+          <div className="flex items-center justify-between">
+            <h4 className="text-lg font-semibold">
+              {activeDay.dayOfWeek} {formatDate(activeDay.date)}
+            </h4>
+            {selectedSlots.length > 0 && (
+              <Badge variant="default" className="gap-2 px-3 py-1.5">
+                <FontAwesomeIcon icon={faCheck} className="h-3 w-3" />
+                <span>
+                  {selectedSlots.length}h • {selectedSlots[0]} -{' '}
+                  {(() => {
+                    const lastSlot = selectedSlots[selectedSlots.length - 1];
+                    const [h, m] = lastSlot.split(':').map(Number);
+                    return `${(h + 1).toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                  })()}
+                </span>
+              </Badge>
+            )}
+          </div>
+
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-11 gap-2">
+            {activeDay.timeSlots.map((slot) => {
+              const isSelected =
+                selectedDay === activeDay.date && selectedSlots.includes(slot.time);
+
+              return (
+                <button
+                  key={slot.time}
+                  disabled={!slot.available}
+                  onMouseDown={() => handleSlotMouseDown(activeDay, slot.time, slot.available)}
+                  onMouseEnter={() => handleSlotMouseEnter(activeDay, slot.time, slot.available)}
+                  className={cn(
+                    'flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all',
+                    'disabled:cursor-not-allowed',
+                    !slot.available &&
+                      'bg-destructive/10 border-destructive/30 text-destructive opacity-50',
+                    slot.available &&
+                      !isSelected &&
+                      'bg-green-50 border-green-200 hover:bg-green-100 hover:border-green-300 hover:scale-105 hover:shadow-md',
+                    isSelected &&
+                      'bg-primary border-primary text-primary-foreground scale-105 shadow-lg'
+                  )}
+                >
+                  <span className="text-base font-semibold">{slot.time}</span>
+                  <FontAwesomeIcon
+                    icon={slot.available ? faCheck : faTimes}
+                    className="h-3 w-3 mt-1 opacity-70"
+                  />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

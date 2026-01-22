@@ -583,7 +583,6 @@ Obtenir la liste des réservations effectuées par un utilisateur.
 - `BookingForm` : Formulaire de réservation
 - `SlotPicker` : Sélecteur de créneaux horaires
 - `BookingCard` : Carte d'une réservation
-- `LoadingSpinner` : Indicateur de chargement
 - `ErrorMessage` : Affichage des erreurs
 - `EmptyState` : État vide (pas de données)
 - `Button` : Bouton réutilisable
@@ -653,7 +652,6 @@ src/
 │   ├── common/
 │   │   ├── Button.jsx
 │   │   ├── Input.jsx
-│   │   ├── LoadingSpinner.jsx
 │   │   ├── ErrorMessage.jsx
 │   │   └── EmptyState.jsx
 │   ├── layout/

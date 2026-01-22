@@ -1,10 +1,20 @@
 import { useState } from 'react';
-import { Input } from '../common/Input';
-import { Button } from '../common/Button';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faUser,
+  faEnvelope,
+  faPhone,
+  faUsers,
+  faCalendarCheck,
+  faEuroSign,
+} from '@fortawesome/free-solid-svg-icons';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { SlotPicker } from './SlotPicker';
 import { useBooking } from '../../hooks/useBooking';
 import type { Room, BookingFormData } from '../../types';
-import './BookingForm.css';
 
 interface BookingFormProps {
   room: Room;
@@ -102,133 +112,171 @@ export function BookingForm({ room, selectedDate, selectedSlot, onSuccess }: Boo
   };
 
   return (
-    <div className="booking-form">
-      <h2 className="booking-form__title">Réserver cette salle</h2>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FontAwesomeIcon icon={faCalendarCheck} className="h-5 w-5 text-primary" />
+          Réserver cette salle
+        </CardTitle>
+      </CardHeader>
 
-      <SlotPicker
-        bookedSlots={room.bookedSlots}
-        onSlotSelect={(date, startTime, endTime) => {
-          setFormData({ ...formData, date, startTime, endTime });
-          setErrors({ ...errors, date: '', time: '' });
-        }}
-      />
-
-      {formData.date && formData.startTime && formData.endTime && (
-        <div className="booking-form__selected-slot">
-          <div className="booking-form__selected-slot-icon">📅</div>
-          <div className="booking-form__selected-slot-details">
-            <p className="booking-form__selected-slot-title">Créneau sélectionné</p>
-            <p className="booking-form__selected-slot-info">
-              {new Date(formData.date + 'T00:00:00').toLocaleDateString('fr-FR', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-              })}{' '}
-              de {formData.startTime} à {formData.endTime}
-            </p>
-          </div>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit}>
-        <Input
-          label="Nom complet"
-          value={formData.customerName}
-          onChange={(value) => setFormData({ ...formData, customerName: value })}
-          error={errors.customerName}
-          placeholder="Jean Dupont"
-          required
-          disabled={loading}
-        />
-
-        <Input
-          label="Email"
-          type="email"
-          value={formData.customerEmail}
-          onChange={(value) => {
-            setFormData({ ...formData, customerEmail: value });
-            // Valider le format email en temps réel
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (value && !emailRegex.test(value)) {
-              setErrors({ ...errors, customerEmail: 'Format email invalide' });
-            } else if (errors.customerEmail) {
-              const newErrors = { ...errors };
-              delete newErrors.customerEmail;
-              setErrors(newErrors);
-            }
+      <CardContent className="space-y-6">
+        <SlotPicker
+          bookedSlots={room.bookedSlots}
+          onSlotSelect={(date, startTime, endTime) => {
+            setFormData({ ...formData, date, startTime, endTime });
+            setErrors({ ...errors, date: '', time: '' });
           }}
-          error={errors.customerEmail}
-          placeholder="jean.dupont@example.com"
-          required
-          disabled={loading}
         />
 
-        <Input
-          label="Téléphone"
-          type="tel"
-          value={formData.customerPhone}
-          onChange={(value) => setFormData({ ...formData, customerPhone: value })}
-          error={errors.customerPhone}
-          placeholder="+33612345678"
-          required
-          disabled={loading}
-        />
-
-        <Input
-          label="Nombre de personnes"
-          type="number"
-          value={formData.numberOfPeople}
-          onChange={(value) => {
-            setFormData({ ...formData, numberOfPeople: value });
-            // Validation en temps réel
-            const numPeople = parseInt(value);
-            if (value && numPeople > room.capacity) {
-              setErrors({
-                ...errors,
-                numberOfPeople: `La capacité maximale est de ${room.capacity} personnes`,
-              });
-            } else if (value && numPeople < 1) {
-              setErrors({ ...errors, numberOfPeople: 'Au moins 1 personne requise' });
-            } else {
-              const newErrors = { ...errors };
-              delete newErrors.numberOfPeople;
-              setErrors(newErrors);
-            }
-          }}
-          error={errors.numberOfPeople}
-          min={1}
-          max={room.capacity}
-          required
-          disabled={loading}
-        />
-
-        <div className="booking-form__summary">
-          <span>Prix total estimé:</span>
-          <span className="booking-form__price">
-            {formData.startTime && formData.endTime
-              ? `${calculatePrice(formData.startTime, formData.endTime, room.pricePerHour)}€`
-              : '-'}
-          </span>
-        </div>
-
-        {error && (
-          <div className="booking-form__error">
-            <p className="booking-form__error-message">{error.message}</p>
-            {error.details && (
-              <ul className="booking-form__error-details">
-                {Object.entries(error.details).map(([field, message]) => (
-                  <li key={field}>{message}</li>
-                ))}
-              </ul>
-            )}
+        {formData.date && formData.startTime && formData.endTime && (
+          <div className="flex items-start gap-3 p-4 bg-primary/5 border-l-4 border-primary rounded-lg">
+            <FontAwesomeIcon icon={faCalendarCheck} className="h-5 w-5 text-primary mt-0.5" />
+            <div>
+              <p className="font-semibold text-sm mb-1">Créneau sélectionné</p>
+              <p className="text-sm text-muted-foreground">
+                {new Date(formData.date + 'T00:00:00').toLocaleDateString('fr-FR', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                })}{' '}
+                de {formData.startTime} à {formData.endTime}
+              </p>
+            </div>
           </div>
         )}
 
-        <Button type="submit" fullWidth disabled={!isFormValid() || loading} loading={loading}>
-          {loading ? 'Réservation en cours...' : 'Réserver'}
-        </Button>
-      </form>
-    </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-2">
+              <FontAwesomeIcon icon={faUser} className="h-4 w-4 text-muted-foreground" />
+              Nom complet
+            </label>
+            <Input
+              value={formData.customerName}
+              onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+              placeholder="Jean Dupont"
+              required
+              disabled={loading}
+            />
+            {errors.customerName && (
+              <p className="text-sm text-destructive">{errors.customerName}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-2">
+              <FontAwesomeIcon icon={faEnvelope} className="h-4 w-4 text-muted-foreground" />
+              Email
+            </label>
+            <Input
+              type="email"
+              value={formData.customerEmail}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData({ ...formData, customerEmail: value });
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (value && !emailRegex.test(value)) {
+                  setErrors({ ...errors, customerEmail: 'Format email invalide' });
+                } else if (errors.customerEmail) {
+                  const newErrors = { ...errors };
+                  delete newErrors.customerEmail;
+                  setErrors(newErrors);
+                }
+              }}
+              placeholder="jean.dupont@example.com"
+              required
+              disabled={loading}
+            />
+            {errors.customerEmail && (
+              <p className="text-sm text-destructive">{errors.customerEmail}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-2">
+              <FontAwesomeIcon icon={faPhone} className="h-4 w-4 text-muted-foreground" />
+              Téléphone
+            </label>
+            <Input
+              type="tel"
+              value={formData.customerPhone}
+              onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+              placeholder="+33612345678"
+              required
+              disabled={loading}
+            />
+            {errors.customerPhone && (
+              <p className="text-sm text-destructive">{errors.customerPhone}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-2">
+              <FontAwesomeIcon icon={faUsers} className="h-4 w-4 text-muted-foreground" />
+              Nombre de personnes
+            </label>
+            <Input
+              type="number"
+              value={formData.numberOfPeople}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData({ ...formData, numberOfPeople: value });
+                const numPeople = parseInt(value);
+                if (value && numPeople > room.capacity) {
+                  setErrors({
+                    ...errors,
+                    numberOfPeople: `La capacité maximale est de ${room.capacity} personnes`,
+                  });
+                } else if (value && numPeople < 1) {
+                  setErrors({ ...errors, numberOfPeople: 'Au moins 1 personne requise' });
+                } else {
+                  const newErrors = { ...errors };
+                  delete newErrors.numberOfPeople;
+                  setErrors(newErrors);
+                }
+              }}
+              min={1}
+              max={room.capacity}
+              required
+              disabled={loading}
+            />
+            {errors.numberOfPeople && (
+              <p className="text-sm text-destructive">{errors.numberOfPeople}</p>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+            <span className="font-semibold flex items-center gap-2">
+              <FontAwesomeIcon icon={faEuroSign} className="h-4 w-4" />
+              Prix total:
+            </span>
+            <Badge variant="default" className="text-base px-3 py-1">
+              {formData.startTime && formData.endTime
+                ? `${calculatePrice(formData.startTime, formData.endTime, room.pricePerHour)}€`
+                : '-'}
+            </Badge>
+          </div>
+
+          {error && (
+            <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+              <p className="text-sm text-destructive font-medium mb-2">{error.message}</p>
+              {error.details && (
+                <ul className="list-disc list-inside text-sm text-destructive/80 space-y-1">
+                  {Object.entries(error.details).map(([field, message]) => (
+                    <li key={field}>{message}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" disabled={!isFormValid() || loading}>
+            {loading ? 'Réservation en cours...' : 'Réserver'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 

@@ -2,7 +2,6 @@ import { Outlet } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import './Layout.css';
 
 export function Layout() {
   const { isLoaded } = useAuth();
@@ -12,9 +11,9 @@ export function Layout() {
   }
 
   return (
-    <div className="layout">
+    <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="layout__main">
+      <main className="flex-1">
         <Outlet />
       </main>
       <Footer />

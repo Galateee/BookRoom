@@ -1,8 +1,10 @@
-import { Button } from './Button';
-import './EmptyState.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { faInbox } from '@fortawesome/free-solid-svg-icons';
+import { Button } from '@/components/ui/button';
 
 interface EmptyStateProps {
-  icon?: string;
+  icon?: IconDefinition;
   title: string;
   message: string;
   actionLabel?: string;
@@ -10,22 +12,20 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({
-  icon = '📭',
+  icon = faInbox,
   title,
   message,
   actionLabel,
   onAction,
 }: EmptyStateProps) {
   return (
-    <div className="empty-state">
-      <div className="empty-state__icon">{icon}</div>
-      <h3 className="empty-state__title">{title}</h3>
-      <p className="empty-state__message">{message}</p>
-      {actionLabel && onAction && (
-        <Button onClick={onAction} variant="primary">
-          {actionLabel}
-        </Button>
-      )}
+    <div className="flex flex-col items-center justify-center p-12 text-center">
+      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted mb-6">
+        <FontAwesomeIcon icon={icon} className="h-10 w-10 text-muted-foreground" />
+      </div>
+      <h3 className="text-2xl font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground mb-8 max-w-md">{message}</p>
+      {actionLabel && onAction && <Button onClick={onAction}>{actionLabel}</Button>}
     </div>
   );
 }

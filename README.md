@@ -26,7 +26,6 @@ BookRoom/
 │   │   ├── common/         # Composants réutilisables
 │   │   │   ├── Button.tsx
 │   │   │   ├── Input.tsx
-│   │   │   ├── LoadingSpinner.tsx
 │   │   │   ├── ErrorMessage.tsx
 │   │   │   └── EmptyState.tsx
 │   │   ├── layout/         # Layout et navigation
@@ -163,7 +162,6 @@ L'utilisateur aura maintenant accès au lien **Admin** dans le header.
 
 - `Button` - Bouton avec variantes (primary, secondary, danger)
 - `Input` - Champ de saisie avec label et erreur
-- `LoadingSpinner` - Indicateur de chargement
 - `ErrorMessage` - Affichage d'erreurs avec retry
 - `EmptyState` - État vide avec action
 

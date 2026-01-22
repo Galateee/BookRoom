@@ -1,4 +1,5 @@
 # 🚀 PHASE 1 - Plan d'Action Détaillé
+
 ## MVP : Authentification + Backend Réel
 
 **Objectif :** Transformer l'application de démonstration en une application fonctionnelle avec authentification et backend réel.
@@ -25,6 +26,7 @@
 ### **PARTIE 1 : Setup & Configuration (8h)**
 
 #### 1.1 Créer un compte Clerk (0.5h)
+
 - [ ] S'inscrire sur [clerk.com](https://clerk.com)
 - [ ] Créer une nouvelle application "BookRoom"
 - [ ] Configurer le magic link comme méthode de connexion
@@ -32,6 +34,7 @@
 - [ ] Configurer les redirections URLs
 
 **Ressources :**
+
 - Documentation Clerk : https://clerk.com/docs/quickstarts/react
 - Dashboard Clerk : https://dashboard.clerk.com
 
@@ -40,12 +43,14 @@
 #### 1.2 Configurer les variables d'environnement (0.5h)
 
 **Créer `.env.local` (frontend) :**
+
 ```env
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
 VITE_API_URL=http://localhost:3001/api
 ```
 
 **Créer `.env` (backend - à créer) :**
+
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/bookroom
 CLERK_SECRET_KEY=sk_test_xxxxx
@@ -55,6 +60,7 @@ NODE_ENV=development
 ```
 
 **Mettre à jour `.gitignore` :**
+
 ```gitignore
 .env
 .env.local
@@ -66,6 +72,7 @@ NODE_ENV=development
 #### 1.3 Installer PostgreSQL localement (1h)
 
 **Option A : Docker (recommandé)**
+
 ```bash
 docker run --name bookroom-postgres \
   -e POSTGRES_USER=bookroom \
@@ -76,10 +83,12 @@ docker run --name bookroom-postgres \
 ```
 
 **Option B : Installation native**
+
 - Télécharger PostgreSQL : https://www.postgresql.org/download/windows/
 - Créer la database `bookroom`
 
 **Vérifier la connexion :**
+
 ```bash
 psql -h localhost -U bookroom -d bookroom
 ```
@@ -89,6 +98,7 @@ psql -h localhost -U bookroom -d bookroom
 #### 1.4 Initialiser le projet backend (2h)
 
 **Structure du projet :**
+
 ```
 TP FRONTEND/
 ├── BookRoom/           # Frontend existant
@@ -109,6 +119,7 @@ TP FRONTEND/
 ```
 
 **Commandes d'initialisation :**
+
 ```bash
 cd "d:\Robin\Downloads\YNOV\fullstack\TP FRONTEND"
 mkdir bookroom-api
@@ -128,6 +139,7 @@ npx prisma init
 #### 1.5 Configurer Prisma Schema (2h)
 
 **Créer `prisma/schema.prisma` :**
+
 ```prisma
 generator client {
   provider = "prisma-client-js"
@@ -187,6 +199,7 @@ enum BookingStatus {
 ```
 
 **Migrer la base de données :**
+
 ```bash
 npx prisma migrate dev --name init
 npx prisma generate
@@ -197,6 +210,7 @@ npx prisma generate
 #### 1.6 Seeder : Migrer les données du mock (2h)
 
 **Créer `prisma/seed.ts` :**
+
 ```typescript
 import { PrismaClient } from '@prisma/client';
 
@@ -219,9 +233,9 @@ async function main() {
       imageUrl: '/images/room-001.jpg',
       images: ['/images/room-001-1.jpg', '/images/room-001-2.jpg'],
       availableSlots: {
-        "2026-01-20": ["09:00", "10:00", "14:00", "15:00", "16:00"],
-        "2026-01-21": ["09:00", "10:00", "11:00", "14:00", "15:00"]
-      }
+        '2026-01-20': ['09:00', '10:00', '14:00', '15:00', '16:00'],
+        '2026-01-21': ['09:00', '10:00', '11:00', '14:00', '15:00'],
+      },
     },
     // ... ajouter toutes les salles du mock
   ];
@@ -239,6 +253,7 @@ main()
 ```
 
 **Ajouter dans `package.json` :**
+
 ```json
 {
   "prisma": {
@@ -248,6 +263,7 @@ main()
 ```
 
 **Exécuter le seed :**
+
 ```bash
 npx prisma db seed
 ```
@@ -259,6 +275,7 @@ npx prisma db seed
 #### 2.1 Créer le serveur Express de base (2h)
 
 **Créer `src/server.ts` :**
+
 ```typescript
 import express from 'express';
 import cors from 'cors';
@@ -273,10 +290,12 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middlewares
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Routes
@@ -301,6 +320,7 @@ app.listen(PORT, () => {
 #### 2.2 Middleware d'authentification Clerk (2h)
 
 **Créer `src/middlewares/auth.middleware.ts` :**
+
 ```typescript
 import { Request, Response, NextFunction } from 'express';
 import { clerkClient } from '@clerk/clerk-sdk-node';
@@ -310,11 +330,7 @@ export interface AuthRequest extends Request {
   user?: any;
 }
 
-export const requireAuth = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const requireAuth = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
@@ -323,8 +339,8 @@ export const requireAuth = async (
         success: false,
         error: {
           code: 'UNAUTHORIZED',
-          message: 'Token d\'authentification manquant'
-        }
+          message: "Token d'authentification manquant",
+        },
       });
     }
 
@@ -341,8 +357,8 @@ export const requireAuth = async (
       success: false,
       error: {
         code: 'INVALID_TOKEN',
-        message: 'Token invalide ou expiré'
-      }
+        message: 'Token invalide ou expiré',
+      },
     });
   }
 };
@@ -353,6 +369,7 @@ export const requireAuth = async (
 #### 2.3 Routes & Controllers pour Rooms (3h)
 
 **Créer `src/routes/room.routes.ts` :**
+
 ```typescript
 import { Router } from 'express';
 import { getRooms, getRoomById } from '../controllers/room.controller';
@@ -366,6 +383,7 @@ export default router;
 ```
 
 **Créer `src/controllers/room.controller.ts` :**
+
 ```typescript
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
@@ -381,22 +399,22 @@ export const getRooms = async (req: Request, res: Response) => {
         capacity: true,
         pricePerHour: true,
         equipments: true,
-        imageUrl: true
-      }
+        imageUrl: true,
+      },
     });
 
     res.json({
       success: true,
       data: rooms,
-      meta: { total: rooms.length }
+      meta: { total: rooms.length },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: {
         code: 'SERVER_ERROR',
-        message: 'Erreur lors de la récupération des salles'
-      }
+        message: 'Erreur lors de la récupération des salles',
+      },
     });
   }
 };
@@ -411,8 +429,8 @@ export const getRoomById = async (req: Request, res: Response) => {
         success: false,
         error: {
           code: 'ROOM_NOT_FOUND',
-          message: 'La salle demandée n\'existe pas'
-        }
+          message: "La salle demandée n'existe pas",
+        },
       });
     }
 
@@ -422,8 +440,8 @@ export const getRoomById = async (req: Request, res: Response) => {
       success: false,
       error: {
         code: 'SERVER_ERROR',
-        message: 'Erreur lors de la récupération de la salle'
-      }
+        message: 'Erreur lors de la récupération de la salle',
+      },
     });
   }
 };
@@ -434,14 +452,11 @@ export const getRoomById = async (req: Request, res: Response) => {
 #### 2.4 Routes & Controllers pour Bookings (protégées) (5h)
 
 **Créer `src/routes/booking.routes.ts` :**
+
 ```typescript
 import { Router } from 'express';
 import { requireAuth } from '../middlewares/auth.middleware';
-import {
-  createBooking,
-  getMyBookings,
-  getBookingById
-} from '../controllers/booking.controller';
+import { createBooking, getMyBookings, getBookingById } from '../controllers/booking.controller';
 
 const router = Router();
 
@@ -456,6 +471,7 @@ export default router;
 ```
 
 **Créer `src/controllers/booking.controller.ts` :**
+
 ```typescript
 import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
@@ -465,7 +481,16 @@ const prisma = new PrismaClient();
 
 export const createBooking = async (req: AuthRequest, res: Response) => {
   try {
-    const { roomId, date, startTime, endTime, customerName, customerEmail, customerPhone, numberOfPeople } = req.body;
+    const {
+      roomId,
+      date,
+      startTime,
+      endTime,
+      customerName,
+      customerEmail,
+      customerPhone,
+      numberOfPeople,
+    } = req.body;
 
     // Validation
     if (!roomId || !date || !startTime || !endTime || !customerName || !customerEmail) {
@@ -473,8 +498,8 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
         success: false,
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Champs requis manquants'
-        }
+          message: 'Champs requis manquants',
+        },
       });
     }
 
@@ -485,8 +510,8 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
         success: false,
         error: {
           code: 'ROOM_NOT_FOUND',
-          message: 'La salle demandée n\'existe pas'
-        }
+          message: "La salle demandée n'existe pas",
+        },
       });
     }
 
@@ -499,9 +524,9 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
         OR: [
           { startTime: { lte: startTime }, endTime: { gt: startTime } },
           { startTime: { lt: endTime }, endTime: { gte: endTime } },
-          { startTime: { gte: startTime }, endTime: { lte: endTime } }
-        ]
-      }
+          { startTime: { gte: startTime }, endTime: { lte: endTime } },
+        ],
+      },
     });
 
     if (conflict) {
@@ -509,8 +534,8 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
         success: false,
         error: {
           code: 'TIME_CONFLICT',
-          message: 'Ce créneau est déjà réservé'
-        }
+          message: 'Ce créneau est déjà réservé',
+        },
       });
     }
 
@@ -533,8 +558,8 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
         customerPhone,
         numberOfPeople,
         totalPrice,
-        status: 'CONFIRMED'
-      }
+        status: 'CONFIRMED',
+      },
     });
 
     res.status(201).json({
@@ -542,9 +567,9 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       data: {
         bookingId: booking.id,
         roomName: room.name,
-        ...booking
+        ...booking,
       },
-      message: 'Réservation créée avec succès'
+      message: 'Réservation créée avec succès',
     });
   } catch (error) {
     console.error('Create booking error:', error);
@@ -552,8 +577,8 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       success: false,
       error: {
         code: 'SERVER_ERROR',
-        message: 'Erreur lors de la création de la réservation'
-      }
+        message: 'Erreur lors de la création de la réservation',
+      },
     });
   }
 };
@@ -563,10 +588,10 @@ export const getMyBookings = async (req: AuthRequest, res: Response) => {
     const bookings = await prisma.booking.findMany({
       where: { userId: req.userId! },
       include: { room: { select: { name: true } } },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
 
-    const formattedBookings = bookings.map(b => ({
+    const formattedBookings = bookings.map((b) => ({
       bookingId: b.id,
       roomName: b.room.name,
       date: b.date,
@@ -574,21 +599,21 @@ export const getMyBookings = async (req: AuthRequest, res: Response) => {
       endTime: b.endTime,
       totalPrice: b.totalPrice,
       status: b.status.toLowerCase(),
-      createdAt: b.createdAt.toISOString()
+      createdAt: b.createdAt.toISOString(),
     }));
 
     res.json({
       success: true,
       data: formattedBookings,
-      meta: { total: formattedBookings.length }
+      meta: { total: formattedBookings.length },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: {
         code: 'SERVER_ERROR',
-        message: 'Erreur lors de la récupération des réservations'
-      }
+        message: 'Erreur lors de la récupération des réservations',
+      },
     });
   }
 };
@@ -596,10 +621,10 @@ export const getMyBookings = async (req: AuthRequest, res: Response) => {
 export const getBookingById = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    
+
     const booking = await prisma.booking.findFirst({
       where: { id, userId: req.userId! },
-      include: { room: true }
+      include: { room: true },
     });
 
     if (!booking) {
@@ -607,8 +632,8 @@ export const getBookingById = async (req: AuthRequest, res: Response) => {
         success: false,
         error: {
           code: 'BOOKING_NOT_FOUND',
-          message: 'Réservation non trouvée'
-        }
+          message: 'Réservation non trouvée',
+        },
       });
     }
 
@@ -617,16 +642,16 @@ export const getBookingById = async (req: AuthRequest, res: Response) => {
       data: {
         bookingId: booking.id,
         roomName: booking.room.name,
-        ...booking
-      }
+        ...booking,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: {
         code: 'SERVER_ERROR',
-        message: 'Erreur lors de la récupération de la réservation'
-      }
+        message: 'Erreur lors de la récupération de la réservation',
+      },
     });
   }
 };
@@ -648,6 +673,7 @@ npm install @clerk/clerk-react
 #### 3.2 Configurer ClerkProvider (1h)
 
 **Modifier `src/main.tsx` :**
+
 ```typescript
 import { ClerkProvider } from '@clerk/clerk-react';
 import { frFR } from '@clerk/localizations';
@@ -660,7 +686,7 @@ if (!PUBLISHABLE_KEY) {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ClerkProvider 
+    <ClerkProvider
       publishableKey={PUBLISHABLE_KEY}
       localization={frFR}
     >
@@ -677,6 +703,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 #### 3.3 Créer les pages d'authentification (3h)
 
 **Créer `src/pages/SignIn.tsx` :**
+
 ```typescript
 import { SignIn as ClerkSignIn } from '@clerk/clerk-react';
 
@@ -688,7 +715,7 @@ export default function SignIn() {
       alignItems: 'center',
       minHeight: '100vh'
     }}>
-      <ClerkSignIn 
+      <ClerkSignIn
         routing="path"
         path="/sign-in"
         signUpUrl="/sign-up"
@@ -700,6 +727,7 @@ export default function SignIn() {
 ```
 
 **Créer `src/pages/SignUp.tsx` :**
+
 ```typescript
 import { SignUp as ClerkSignUp } from '@clerk/clerk-react';
 
@@ -711,7 +739,7 @@ export default function SignUp() {
       alignItems: 'center',
       minHeight: '100vh'
     }}>
-      <ClerkSignUp 
+      <ClerkSignUp
         routing="path"
         path="/sign-up"
         signInUrl="/sign-in"
@@ -723,6 +751,7 @@ export default function SignUp() {
 ```
 
 **Créer `src/pages/LandingPage.tsx` :**
+
 ```typescript
 import { Link } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
@@ -734,7 +763,7 @@ export default function LandingPage() {
     <div className="landing-page">
       <h1>BookRoom - Réservez votre salle de réunion</h1>
       <p>La solution simple pour réserver des espaces de travail</p>
-      
+
       {isSignedIn ? (
         <Link to="/rooms">
           <button>Voir les salles disponibles</button>
@@ -759,10 +788,10 @@ export default function LandingPage() {
 #### 3.4 Protéger les routes existantes (2h)
 
 **Créer `src/components/auth/ProtectedRoute.tsx` :**
+
 ```typescript
 import { useAuth } from '@clerk/clerk-react';
 import { Navigate } from 'react-router-dom';
-import LoadingSpinner from '../common/LoadingSpinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -772,7 +801,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isLoaded, isSignedIn } = useAuth();
 
   if (!isLoaded) {
-    return <LoadingSpinner />;
+    return <div>Chargement...</div>;
   }
 
   if (!isSignedIn) {
@@ -784,6 +813,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 ```
 
 **Mettre à jour `src/App.tsx` :**
+
 ```typescript
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
@@ -801,7 +831,7 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/sign-in/*" element={<SignIn />} />
       <Route path="/sign-up/*" element={<SignUp />} />
-      
+
       <Route element={<Layout />}>
         <Route
           path="/rooms"
@@ -840,6 +870,7 @@ export default App;
 #### 3.5 Mettre à jour le Header avec UserButton (1.5h)
 
 **Modifier `src/components/layout/Header.tsx` :**
+
 ```typescript
 import { Link } from 'react-router-dom';
 import { UserButton, useUser } from '@clerk/clerk-react';
@@ -883,6 +914,7 @@ export default function Header() {
 #### 3.6 Mettre à jour le service API avec authentification (4h)
 
 **Modifier `src/services/api.service.ts` :**
+
 ```typescript
 import { useAuth } from '@clerk/clerk-react';
 
@@ -916,19 +948,19 @@ export const useApiClient = () => {
 
   return {
     // Rooms (publiques)
-    getRooms: () => fetch(`${API_URL}/rooms`).then(r => r.json()),
-    getRoomById: (id: string) => fetch(`${API_URL}/rooms/${id}`).then(r => r.json()),
+    getRooms: () => fetch(`${API_URL}/rooms`).then((r) => r.json()),
+    getRoomById: (id: string) => fetch(`${API_URL}/rooms/${id}`).then((r) => r.json()),
 
     // Bookings (authentifiées)
-    createBooking: (data: any) => 
+    createBooking: (data: any) =>
       fetchWithAuth('/bookings', {
         method: 'POST',
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       }),
-    
+
     getMyBookings: () => fetchWithAuth('/bookings/me'),
-    
-    getBookingById: (id: string) => fetchWithAuth(`/bookings/${id}`)
+
+    getBookingById: (id: string) => fetchWithAuth(`/bookings/${id}`),
   };
 };
 ```
@@ -938,6 +970,7 @@ export const useApiClient = () => {
 #### 3.7 Mettre à jour les hooks pour utiliser le nouveau service (2h)
 
 **Modifier `src/hooks/useBooking.ts` :**
+
 ```typescript
 import { useState } from 'react';
 import { useApiClient } from '../services/api.service';
@@ -974,6 +1007,7 @@ export const useBooking = () => {
 ### **PARTIE 4 : Tests & Validation (8h)**
 
 #### 4.1 Tester l'authentification (2h)
+
 - [ ] Inscription d'un nouvel utilisateur
 - [ ] Réception du magic link par email
 - [ ] Connexion réussie
@@ -983,6 +1017,7 @@ export const useBooking = () => {
 ---
 
 #### 4.2 Tester le backend (3h)
+
 - [ ] GET /api/rooms → liste des salles
 - [ ] GET /api/rooms/:id → détail d'une salle
 - [ ] POST /api/bookings (sans token) → erreur 401
@@ -995,6 +1030,7 @@ export const useBooking = () => {
 ---
 
 #### 4.3 Tester le flux complet frontend (2h)
+
 - [ ] Parcours complet : inscription → connexion → consultation → réservation
 - [ ] Vérifier les états de chargement
 - [ ] Vérifier la gestion des erreurs
@@ -1003,6 +1039,7 @@ export const useBooking = () => {
 ---
 
 #### 4.4 Documenter les changements (1h)
+
 - [ ] Mettre à jour README.md avec nouvelles instructions
 - [ ] Documenter les variables d'environnement
 - [ ] Créer un guide de démarrage rapide
@@ -1012,6 +1049,7 @@ export const useBooking = () => {
 ## 📋 Checklist de validation Phase 1
 
 ### Backend
+
 - [ ] PostgreSQL installé et accessible
 - [ ] Backend démarre sans erreur
 - [ ] Migration Prisma réussie
@@ -1020,6 +1058,7 @@ export const useBooking = () => {
 - [ ] Middleware d'authentification fonctionne
 
 ### Frontend
+
 - [ ] Clerk configuré correctement
 - [ ] Pages d'authentification fonctionnelles
 - [ ] Routes protégées
@@ -1028,6 +1067,7 @@ export const useBooking = () => {
 - [ ] Aucune erreur de build
 
 ### Intégration
+
 - [ ] Frontend se connecte au backend réel
 - [ ] Authentification end-to-end fonctionnelle
 - [ ] Création de réservation avec authentification

@@ -1,5 +1,4 @@
 import { SignUp as ClerkSignUp } from '@clerk/clerk-react';
-import './Auth.css';
 
 export function SignUp() {
   return (
