@@ -70,6 +70,10 @@ class ApiService {
   }
 
   // Admin endpoints
+  async getAllRoomsAdmin(): Promise<ApiResponse<Room[]>> {
+    return this.request<Room[]>('/admin/rooms');
+  }
+
   async createRoom(roomData: Omit<Room, 'id'>): Promise<ApiResponse<Room>> {
     return this.request<Room>('/admin/rooms', {
       method: 'POST',
@@ -87,6 +91,12 @@ class ApiService {
   async deleteRoom(roomId: string): Promise<ApiResponse<Room>> {
     return this.request<Room>(`/admin/rooms/${roomId}`, {
       method: 'DELETE',
+    });
+  }
+
+  async toggleRoomStatus(roomId: string): Promise<ApiResponse<Room>> {
+    return this.request<Room>(`/admin/rooms/${roomId}/toggle`, {
+      method: 'PATCH',
     });
   }
 
@@ -110,13 +120,25 @@ class ApiService {
     ApiResponse<{
       totalRooms: number;
       totalBookings: number;
-      confirmedBookings: number;
-      futureBookings: number;
       totalRevenue: number;
-      mostBookedRoom: { id: string; name: string; bookingCount: number } | null;
+      activeUsers: number;
+      monthlyGrowth: number;
+      topRooms: Array<{
+        id: string;
+        name: string;
+        imageUrl: string;
+        bookings: number;
+      }>;
     }>
   > {
     return this.request('/admin/statistics');
+  }
+
+  async updateBookingStatus(id: string, status: string): Promise<ApiResponse<Booking>> {
+    return this.request(`/admin/bookings/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
   }
 }
 

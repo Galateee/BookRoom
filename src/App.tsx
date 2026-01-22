@@ -7,6 +7,9 @@ import { SignIn } from './pages/SignIn';
 import { SignUp } from './pages/SignUp';
 import { NotFound } from './pages/NotFound';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminStatistics from './pages/admin/AdminStatistics';
+import AdminRooms from './pages/admin/AdminRooms';
+import AdminBookings from './pages/admin/AdminBookings';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 function App() {
@@ -40,6 +43,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="admin/statistics"
+            element={
+              <ProtectedRoute>
+                <AdminStatistics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="admin/rooms"
+            element={
+              <ProtectedRoute>
+                <AdminRooms />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="admin/bookings"
+            element={
+              <ProtectedRoute>
+                <AdminBookings />
               </ProtectedRoute>
             }
           />

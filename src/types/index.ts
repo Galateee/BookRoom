@@ -9,6 +9,7 @@ export interface Room {
   imageUrl: string;
   description?: string;
   images?: string[];
+  isActive?: boolean;
   bookedSlots?: BookedSlot[];
 }
 

@@ -21,15 +21,15 @@ export function MyBookings() {
         <Skeleton className="h-10 w-64 mb-2" />
         <Skeleton className="h-6 w-48 mb-8" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(12)].map((_, i) => (
             <Card key={i}>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-3 mb-2">
                 <div className="flex items-start justify-between">
                   <Skeleton className="h-6 w-32" />
                   <Skeleton className="h-5 w-20" />
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 mb-2">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-full" />
