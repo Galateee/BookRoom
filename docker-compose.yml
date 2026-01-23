@@ -1,0 +1,79 @@
+# BookRoom - Configuration Docker Complète
+
+services:
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: bookroom-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bookroom
+      POSTGRES_PASSWORD: bookroom123
+      POSTGRES_DB: bookroom
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bookroom -d bookroom"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bookroom-network
+
+  # Backend API Express + Prisma
+  api:
+    build:
+      context: ./BookRoom API
+      dockerfile: Dockerfile
+    container_name: bookroom-api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./BookRoom API/.env
+    environment:
+      - DATABASE_URL=postgresql://bookroom:bookroom123@postgres:5432/bookroom
+      - NODE_ENV=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # Hot reload - Monte le code source en lecture seule
+      - ./BookRoom API/src:/app/src:ro
+      - ./BookRoom API/prisma:/app/prisma:ro
+    networks:
+      - bookroom-network
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+
+  # Frontend React + Vite
+  frontend:
+    build:
+      context: ./BookRoom Front
+      dockerfile: Dockerfile
+    container_name: bookroom-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./BookRoom Front/.env.local
+    environment:
+      - VITE_API_URL=http://localhost:3001/api
+    depends_on:
+      - api
+    volumes:
+      # Hot reload - Monte le code source en lecture seule
+      - ./BookRoom Front/src:/app/src:ro
+      - ./BookRoom Front/public:/app/public:ro
+    networks:
+      - bookroom-network
+
+volumes:
+  postgres_data:
+    name: bookroom-postgres-data
+
+networks:
+  bookroom-network:
+    name: bookroom-network
+    driver: bridge

@@ -1,0 +1,88 @@
+# 🐳 BookRoom - .gitignore
+
+
+# Backups Git temporaires
+.git-backups/
+
+# Docker
+docker-compose.override.yml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies
+BookRoom Front/node_modules/
+BookRoom Front/npm-debug.log*
+BookRoom Front/yarn-debug.log*
+BookRoom Front/yarn-error.log*
+BookRoom Front/pnpm-debug.log*
+BookRoom Front/lerna-debug.log*
+
+# Build outputs
+BookRoom Front/dist/
+BookRoom Front/dist-ssr/
+BookRoom Front/build/
+BookRoom Front/.next/
+BookRoom Front/out/
+
+# Environment variables
+BookRoom Front/.env
+BookRoom Front/.env.local
+BookRoom Front/.env*.local
+BookRoom Front/.env.production
+
+# Logs
+BookRoom Front/logs/
+BookRoom Front/*.log
+
+# Test coverage
+BookRoom Front/coverage/
+
+# Dependencies
+BookRoom API/node_modules/
+BookRoom API/npm-debug.log*
+BookRoom API/yarn-debug.log*
+BookRoom API/yarn-error.log*
+
+# Build output
+BookRoom API/dist/
+
+# Environment variables
+BookRoom API/.env
+BookRoom API/.env.local
+BookRoom API/.env*.local
+
+# Prisma
+BookRoom API/generated/prisma/
+BookRoom API/prisma/migrations/dev.db
+
+# Database
+BookRoom API/*.db
+BookRoom API/*.sqlite
+BookRoom API/*.sqlite3
+
+# Logs
+BookRoom API/logs/
+BookRoom API/*.log
+
+# Test coverage
+BookRoom API/coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Lock files (optionnel, décommenter si besoin)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
