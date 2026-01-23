@@ -13,11 +13,14 @@ interface RoomCardProps {
 export function RoomCard({ room }: RoomCardProps) {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-48 overflow-hidden bg-muted">
         <img
-          src={room.imageUrl || '/placeholder-room.jpg'}
+          src={room.imageUrl || '/placeholder-room.webp'}
           alt={room.name}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = '/placeholder-room.webp';
+          }}
         />
         <div className="absolute top-3 right-3">
           <Badge variant="secondary" className="bg-white/90 backdrop-blur">

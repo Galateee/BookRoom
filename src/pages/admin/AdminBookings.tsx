@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useAdminBookings } from '@/hooks/useAdminBookings';
+import { getStatusLabel, getStatusVariant } from '@/lib/booking-status';
 import type { Booking } from '@/types';
 
 export default function AdminBookings() {
@@ -69,25 +70,6 @@ export default function AdminBookings() {
     } finally {
       setActionLoading(false);
     }
-  };
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      confirmed: 'Confirmée',
-      cancelled: 'Annulée',
-      completed: 'Terminée',
-    };
-    return labels[status.toLowerCase()] || status;
-  };
-
-  const getStatusVariant = (
-    status: string
-  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
-    const statusLower = status.toLowerCase();
-    if (statusLower === 'confirmed') return 'default';
-    if (statusLower === 'cancelled') return 'destructive';
-    if (statusLower === 'completed') return 'secondary';
-    return 'outline';
   };
 
   if (loading) {

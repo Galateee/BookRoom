@@ -171,7 +171,7 @@ export function RoomFormDialog({ open, onOpenChange, room, onSubmit }: RoomFormD
                 alt="Aperçu"
                 className="h-full w-full object-cover"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/placeholder-room.jpg';
+                  (e.target as HTMLImageElement).src = '/placeholder-room.webp';
                 }}
               />
             </div>

@@ -40,6 +40,7 @@ export interface BookingFormData {
   customerEmail: string;
   customerPhone: string;
   numberOfPeople: number;
+  totalPrice?: number;
 }
 
 export interface Booking {
@@ -61,10 +62,20 @@ export interface Booking {
   numberOfPeople: number;
   totalPrice: number;
   status:
+    | 'PENDING_PAYMENT'
+    | 'PAYMENT_PROCESSING'
+    | 'PAYMENT_RECEIVED'
     | 'CONFIRMED'
-    | 'MODIFIED'
-    | 'CANCELLED'
+    | 'CHECKED_IN'
+    | 'IN_PROGRESS'
     | 'COMPLETED'
+    | 'CANCELLED_BY_USER'
+    | 'CANCELLED_BY_ADMIN'
+    | 'CANCELLED_NO_PAYMENT'
+    | 'NO_SHOW'
+    | 'REFUNDED'
+    | 'MODIFIED'
+    // Support des anciennes valeurs lowercase pour compatibilité
     | 'confirmed'
     | 'cancelled'
     | 'completed';
@@ -86,4 +97,13 @@ export interface ApiError {
   code: string;
   message: string;
   details?: Record<string, string>;
+}
+
+export interface StripeSession {
+  id: string;
+  status: string;
+  payment_status: string;
+  customer_email?: string;
+  amount_total?: number;
+  currency?: string;
 }

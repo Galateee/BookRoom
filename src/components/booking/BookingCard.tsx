@@ -3,35 +3,13 @@ import { faCalendarDay, faClock, faEuroSign } from '@fortawesome/free-solid-svg-
 import type { Booking } from '../../types';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { getStatusLabel, getStatusVariant } from '@/lib/booking-status';
 
 interface BookingCardProps {
   booking: Booking;
 }
 
 export function BookingCard({ booking }: BookingCardProps) {
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      confirmed: 'Confirmée',
-      CONFIRMED: 'Confirmée',
-      cancelled: 'Annulée',
-      CANCELLED: 'Annulée',
-      completed: 'Terminée',
-      COMPLETED: 'Terminée',
-      MODIFIED: 'Modifiée',
-    };
-    return labels[status] || status;
-  };
-
-  const getStatusVariant = (
-    status: string
-  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
-    const statusLower = status.toLowerCase();
-    if (statusLower === 'confirmed') return 'default';
-    if (statusLower === 'cancelled') return 'destructive';
-    if (statusLower === 'completed') return 'secondary';
-    return 'outline';
-  };
-
   const roomName = booking.roomName || booking.room?.name || 'Salle inconnue';
 
   return (

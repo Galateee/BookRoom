@@ -20,7 +20,7 @@ export function useAdminBookings(): UseAdminBookingsResult {
     try {
       setLoading(true);
       setError(null);
-      const response = await apiService.getMyBookings();
+      const response = await apiService.getAllBookings();
       if (response.success && response.data) {
         setBookings(response.data);
       } else {

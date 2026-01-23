@@ -1,4 +1,4 @@
-import type { ApiResponse, Room, Booking, BookingFormData } from '../types';
+import type { ApiResponse, Room, Booking, BookingFormData, StripeSession } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -138,6 +138,46 @@ class ApiService {
     return this.request(`/admin/bookings/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
+    });
+  }
+
+  // Payment endpoints
+  async createCheckout(
+    bookingData: BookingFormData
+  ): Promise<ApiResponse<{ bookingId: string; sessionId: string; sessionUrl: string }>> {
+    return this.request('/payment/create-checkout', {
+      method: 'POST',
+      body: JSON.stringify({ bookingData }),
+    });
+  }
+
+  async verifyPayment(
+    sessionId: string
+  ): Promise<ApiResponse<{ booking: Booking; session: StripeSession }>> {
+    return this.request(`/payment/verify/${sessionId}`);
+  }
+
+  async requestRefund(
+    bookingId: string,
+    reason: string
+  ): Promise<ApiResponse<{ refundAmount: number; refundPercentage: number; refundId: string }>> {
+    return this.request('/payment/refund', {
+      method: 'POST',
+      body: JSON.stringify({ bookingId, reason }),
+    });
+  }
+
+  async calculateRefund(bookingId: string): Promise<
+    ApiResponse<{
+      totalPrice: number;
+      refundAmount: number;
+      refundPercentage: number;
+      canRefund: boolean;
+    }>
+  > {
+    return this.request('/payment/calculate-refund', {
+      method: 'POST',
+      body: JSON.stringify({ bookingId }),
     });
   }
 }

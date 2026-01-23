@@ -127,11 +127,14 @@ export function RoomDetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">
-          <div className="relative h-96 rounded-lg overflow-hidden">
+          <div className="relative h-96 rounded-lg overflow-hidden bg-muted">
             <img
-              src={room.imageUrl || '/placeholder-room.jpg'}
+              src={room.imageUrl || '/placeholder-room.webp'}
               alt={room.name}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/placeholder-room.webp';
+              }}
             />
           </div>
 

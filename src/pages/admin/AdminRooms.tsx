@@ -49,13 +49,13 @@ export default function AdminRooms() {
       await createRoom(roomData);
       setActionMessage({ type: 'success', text: 'Salle créée avec succès' });
       setTimeout(() => setActionMessage(null), 10000);
-    } catch (err) {
+    } catch (error: unknown) {
       setActionMessage({
         type: 'error',
-        text: err instanceof Error ? err.message : 'Erreur lors de la création',
+        text: error instanceof Error ? error.message : 'Erreur lors de la création',
       });
       setTimeout(() => setActionMessage(null), 10000);
-      throw err;
+      throw error;
     }
   };
 
@@ -66,13 +66,13 @@ export default function AdminRooms() {
         setSelectedRoom(null);
         setActionMessage({ type: 'success', text: 'Salle modifiée avec succès' });
         setTimeout(() => setActionMessage(null), 10000);
-      } catch (err) {
+      } catch (error: unknown) {
         setActionMessage({
           type: 'error',
-          text: err instanceof Error ? err.message : 'Erreur lors de la modification',
+          text: error instanceof Error ? error.message : "Erreur lors de l'opération",
         });
         setTimeout(() => setActionMessage(null), 10000);
-        throw err;
+        throw error;
       }
     }
   };
@@ -101,12 +101,12 @@ export default function AdminRooms() {
             : 'Salle activée. Elle est maintenant visible par les utilisateurs.',
         });
         setTimeout(() => setActionMessage(null), 10000);
-      } catch (err) {
+      } catch (error: unknown) {
         setToggleDialogOpen(false);
         setRoomToToggle(null);
         setActionMessage({
           type: 'error',
-          text: err instanceof Error ? err.message : 'Erreur lors du changement de statut',
+          text: error instanceof Error ? error.message : 'Erreur lors du changement de statut',
         });
         setTimeout(() => setActionMessage(null), 10000);
       } finally {
@@ -127,12 +127,12 @@ export default function AdminRooms() {
           text: 'Salle supprimée définitivement',
         });
         setTimeout(() => setActionMessage(null), 10000);
-      } catch (err) {
+      } catch (error: unknown) {
         setDeleteDialogOpen(false);
         setRoomToDelete(null);
         setActionMessage({
           type: 'error',
-          text: err instanceof Error ? err.message : 'Erreur lors de la suppression',
+          text: error instanceof Error ? error.message : 'Erreur lors de la suppression',
         });
         setTimeout(() => setActionMessage(null), 10000);
       } finally {
@@ -241,11 +241,14 @@ export default function AdminRooms() {
             key={room.id}
             className={`overflow-hidden ${!room.isActive ? 'border-2 border-dashed border-destructive/50 bg-muted/30' : ''}`}
           >
-            <div className="relative h-48">
+            <div className="relative h-48 bg-muted">
               <img
-                src={room.imageUrl}
+                src={room.imageUrl || '/placeholder-room.webp'}
                 alt={room.name}
                 className={`w-full h-full object-cover ${!room.isActive ? 'grayscale opacity-50' : ''}`}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/placeholder-room.webp';
+                }}
               />
               {/* Badge Actif/Désactivé */}
               <div className="absolute top-2 right-2">
