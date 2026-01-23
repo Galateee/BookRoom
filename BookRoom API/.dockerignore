@@ -2,6 +2,9 @@ node_modules
 dist
 npm-debug.log*
 .env
-.env.local
 .DS_Store
 *.log
+coverage
+.git
+.gitignore
+README.md

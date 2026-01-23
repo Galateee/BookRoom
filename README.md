@@ -10,17 +10,17 @@
 [![Node.js](https://img.shields.io/badge/Node.js-20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
-[Démo](#-demo) • [Installation](#-installation-rapide) • [Documentation](#-documentation) • [Fonctionnalités](#-fonctionnalités)
+[Installation](#-installation-rapide) • [Fonctionnalités](#-fonctionnalités)
 
 </div>
 
 ---
 
-## 📖 À propos
+## À propos
 
 **BookRoom** est une application full-stack de gestion et réservation de salles de réunion avec système de paiement intégré. Conçue pour simplifier la réservation d'espaces professionnels, elle offre une interface moderne et intuitive pour les utilisateurs et un tableau de bord complet pour les administrateurs.
 
-### ✨ Points forts
+### Points forts
 
 - **Interface moderne** - Design responsive avec Tailwind CSS et shadcn/ui
 - **Authentification robuste** - Clerk
@@ -31,7 +31,7 @@
 
 ---
 
-## 🚀 Installation rapide
+## Installation rapide
 
 ### Prérequis
 
@@ -42,57 +42,51 @@
 ### 3 étapes pour démarrer
 
 ```bash
-# 1️⃣ Cloner le projet
-git clone <votre-repo>
+# Cloner le projet
+git clone https://github.com/Galateee/BookRoom.git
 cd "BookRoom"
 
-# 2️⃣ Configurer les variables d'environnement
-cd "BookRoom API"
+# Configurer les variables d'environnement
 cp .env.example .env
-# Éditer .env avec vos clés Clerk et Stripe
+# Éditer .env avec vos clés
 
-cd ../"BookRoom Front"
-cp .env.example .env.local
-# Éditer .env.local avec vos clés
 cd ..
 
-# 3️⃣ Lancer l'application
+# Lancer l'application
 docker compose up -d
 ```
 
-**🎉 C'est prêt !**
+**C'est prêt !**
 
 - **Frontend** : http://localhost:5173
 - **Backend** : http://localhost:3001
 - **Base de données** : localhost:5433
 
-> 📖 Guide complet : voir [DOCKER_SETUP.md](./DOCKER_SETUP.md)
-
 ---
 
-## 🎯 Fonctionnalités
+## Fonctionnalités
 
 ### Pour les utilisateurs
 
-- ✅ **Inscription/Connexion** - Email, Google, GitHub via Clerk
-- 🏢 **Catalogue de salles** - Photos, équipements, capacité, tarifs
-- 📅 **Réservation interactive** - Calendrier avec créneaux disponibles
-- 💳 **Paiement sécurisé** - Stripe Checkout avec confirmation par email
-- 📋 **Mes réservations** - Historique et gestion
-- ❌ **Annulation** - Remboursement automatique selon les conditions
+- **Inscription/Connexion** - Email, via Clerk
+- **Catalogue de salles** - Photos, équipements, capacité, tarifs
+- **Réservation interactive** - Calendrier avec créneaux disponibles
+- **Paiement sécurisé** - Stripe Checkout avec confirmation par email
+- **Mes réservations** - Historique et gestion
+- **Annulation** - Remboursement automatique selon les conditions
 
 ### Pour les administrateurs
 
-- 📊 **Dashboard** - Vue d'ensemble avec statistiques clés
-- 🏢 **Gestion des salles** - Créer, modifier, activer/désactiver
-- 📅 **Toutes les réservations** - Filtres et changement de statut
-- 👥 **Utilisateurs actifs** - Suivi de l'activité
-- 📈 **Top salles** - Salles les plus réservées
-- 💰 **Revenus** - Suivi des paiements
+- **Dashboard** - Vue d'ensemble avec statistiques clés
+- **Gestion des salles** - Créer, modifier, activer/désactiver
+- **Toutes les réservations** - Filtres et changement de statut
+- **Utilisateurs actifs** - Suivi de l'activité
+- **Top salles** - Salles les plus réservées
+- **Revenus** - Suivi des paiements
 
 ---
 
-## 🛠️ Stack technique
+## Stack technique
 
 ### Frontend
 
@@ -124,15 +118,12 @@ docker compose up -d
 
 ---
 
-## 📁 Structure du projet
+## Structure du projet
 
 ```
-TP FRONTEND/
-├── � DOCKER_SETUP.md              # Guide d'installation
-├── 📖 QUICKSTART.md                # Démarrage ultra-rapide
-├── 📖 OPTIMIZATIONS.md             # Détails techniques
+BookRoom/
 │
-├── 📱 BookRoom Front/              # Frontend React
+├── BookRoom Front/              # Frontend React
 │   ├── src/
 │   │   ├── components/            # Composants réutilisables
 │   │   │   ├── auth/              # Auth provider, routes protégées
@@ -144,11 +135,9 @@ TP FRONTEND/
 │   │   ├── pages/                 # Pages et routes
 │   │   ├── services/              # Services API
 │   │   └── types/                 # Types TypeScript
-│   ├── .env.example
-│   ├── Dockerfile
-│   └── package.json
+│   └── .env.example
 │
-└── 🚀 BookRoom API/                # Backend Node.js
+└── BookRoom API/                # Backend Node.js
     ├── src/
     │   ├── controllers/           # Logique métier
     │   ├── middlewares/           # Auth, error handling
@@ -158,8 +147,7 @@ TP FRONTEND/
     │   ├── schema.prisma          # Schéma de base de données
     │   ├── migrations/            # Migrations SQL
     │   └── seed.ts                # Données de test
-    ├── .env.example
-    └── Dockerfile
+    └── .env.example
 ```
 
 ---
@@ -168,35 +156,41 @@ TP FRONTEND/
 
 ### Variables d'environnement
 
-#### Backend (`BookRoom API/.env`)
+`BookRoom/.env`
 
 ```env
-# Base de données
-DATABASE_URL="postgresql://bookroom:bookroom123@postgres:5432/bookroom"
+# -----------------------------------------------------------------------------
+# PostgreSQL Database
+# -----------------------------------------------------------------------------
+POSTGRES_PASSWORD=changez_ce_mot_de_passe
 
-# Clerk
-CLERK_PUBLISHABLE_KEY="pk_test_..."
-CLERK_SECRET_KEY="sk_test_..."
+DATABASE_URL=postgresql://bookroom:changez_ce_mot_de_passe@postgres:5432/bookroom
 
-# Stripe
-STRIPE_SECRET_KEY="sk_test_..."
-STRIPE_WEBHOOK_SECRET="whsec_..."
-STRIPE_PUBLISHABLE_KEY="pk_test_..."
+# -----------------------------------------------------------------------------
+# Clerk Authentication (https://dashboard.clerk.com)
+# -----------------------------------------------------------------------------
+
+CLERK_PUBLISHABLE_KEY=pk_test_...
+
+CLERK_SECRET_KEY=sk_test_...
+
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
+
+# -----------------------------------------------------------------------------
+# Stripe Payment (https://dashboard.stripe.com)
+# -----------------------------------------------------------------------------
+
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_MODE=test
+
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 ```
-
-#### Frontend (`BookRoom Front/.env.local`)
-
-```env
-VITE_API_URL="http://localhost:3001/api"
-VITE_CLERK_PUBLISHABLE_KEY="pk_test_..."
-VITE_STRIPE_PUBLISHABLE_KEY="pk_test_..."
-```
-
-> 📖 Guide détaillé : [DOCKER_SETUP.md](./DOCKER_SETUP.md)
 
 ---
 
-## 📊 Base de données
+## Base de données
 
 ### Modèles principaux
 
@@ -231,7 +225,7 @@ VITE_STRIPE_PUBLISHABLE_KEY="pk_test_..."
 
 ---
 
-## 🧪 Tests et développement
+## Tests et développement
 
 ### Comptes de test
 
@@ -272,28 +266,7 @@ docker compose up -d --build
 
 ---
 
-## 🚀 Déploiement
-
-### Production avec Docker
-
-```bash
-# Build optimisé
-docker compose -f docker-compose.prod.yml up -d
-
-# Variables d'environnement
-NODE_ENV=production
-DATABASE_URL=<votre-db-production>
-```
-
-### Plateformes recommandées
-
-- **Frontend** : [Vercel](https://vercel.com) / [Netlify](https://netlify.com)
-- **Backend** : [Railway](https://railway.app) / [Render](https://render.com)
-- **Base de données** : [Supabase](https://supabase.com) / [Railway](https://railway.app)
-
----
-
-## ⚡ Optimisations
+## Optimisations
 
 Le projet a été optimisé pour les performances :
 
@@ -303,82 +276,12 @@ Le projet a été optimisé pour les performances :
 - ✅ **-60%** re-renders inutiles (useCallback/useMemo)
 - ✅ **+40%** vitesse de chargement
 
-> 📖 Détails : [OPTIMIZATIONS.md](./OPTIMIZATIONS.md)
-
----
-
-## 🐛 Résolution de problèmes
-
-### Les containers ne démarrent pas
-
-```bash
-docker ps                    # Vérifier Docker
-docker compose up            # Mode verbeux
-docker compose down -v       # Réinitialiser
-docker compose up -d --build # Rebuild complet
-```
-
-### Port déjà utilisé
-
-Modifier les ports dans `docker-compose.yml` :
-
-```yaml
-ports:
-  - "5174:5173" # Frontend
-  - "3002:3001" # Backend
-```
-
-### Erreur de connexion PostgreSQL
-
-```bash
-docker compose logs postgres # Voir les logs
-docker compose restart postgres
-```
-
----
-
-## 📚 Documentation
-
-- [DOCKER_SETUP.md](./DOCKER_SETUP.md) - Guide d'installation complet
-- [DOCKER_UNIFIED.md](./DOCKER_UNIFIED.md) - Architecture Docker
-- [QUICKSTART.md](./QUICKSTART.md) - Démarrage ultra-rapide
-- [OPTIMIZATIONS.md](./OPTIMIZATIONS.md) - Optimisations techniques
-- [CLEANUP_LOG.md](./CLEANUP_LOG.md) - Historique des changements
-
----
-
-## 🤝 Contribution
-
-Les contributions sont les bienvenues ! Pour contribuer :
-
-1. Fork le projet
-2. Créer une branche (`git checkout -b feature/AmazingFeature`)
-3. Commit les changements (`git commit -m 'Add AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
-
----
-
-## 📝 License
-
-Projet éducatif réalisé dans le cadre du TP Frontend - YNOV 2026
-
----
-
-## 🙏 Remerciements
-
-- [Clerk](https://clerk.com) - Authentification
-- [Stripe](https://stripe.com) - Paiements
-- [shadcn/ui](https://ui.shadcn.com) - Composants UI
-- [Prisma](https://prisma.io) - ORM
-- [Vite](https://vitejs.dev) - Build tool
-
 ---
 
 <div align="center">
 
 **⭐ Si ce projet vous plaît, n'hésitez pas à lui donner une étoile ! ⭐**
 
-Fait avec ❤️ par l'équipe BookRoom
+Fait avec ❤️
 
 </div>

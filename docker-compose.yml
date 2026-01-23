@@ -7,15 +7,15 @@ services:
     container_name: bookroom-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: bookroom
-      POSTGRES_PASSWORD: bookroom123
-      POSTGRES_DB: bookroom
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5433:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U bookroom -d bookroom"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,12 +30,11 @@ services:
     container_name: bookroom-api
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      - "${API_PORT:-3001}:3001"
     env_file:
-      - ./BookRoom API/.env
+      - .env
     environment:
-      - DATABASE_URL=postgresql://bookroom:bookroom123@postgres:5432/bookroom
-      - NODE_ENV=development
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     depends_on:
       postgres:
         condition: service_healthy
@@ -55,11 +54,9 @@ services:
     container_name: bookroom-frontend
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT:-5173}:5173"
     env_file:
-      - ./BookRoom Front/.env.local
-    environment:
-      - VITE_API_URL=http://localhost:3001/api
+      - .env
     depends_on:
       - api
     volumes:

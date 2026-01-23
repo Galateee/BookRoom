@@ -7,6 +7,11 @@
 # Docker
 docker-compose.override.yml
 
+# Environment variables - RACINE
+.env
+.env.local
+.env*.local
+
 # IDE
 .vscode/
 .idea/

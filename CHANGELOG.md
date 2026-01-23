@@ -98,14 +98,3 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/lang/fr/).
 - Application mobile React Native
 
 ---
-
-## Types de changements
-
-- `✨ Ajouté` - Nouvelles fonctionnalités
-- `🔄 Modifié` - Changements dans les fonctionnalités existantes
-- `⚠️ Déprécié` - Fonctionnalités bientôt supprimées
-- `🗑️ Supprimé` - Fonctionnalités supprimées
-- `🐛 Corrigé` - Corrections de bugs
-- `🔒 Sécurité` - Corrections de vulnérabilités
-- `⚡ Performance` - Améliorations de performance
-- `📚 Documentation` - Modifications de la documentation
