@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUser,
-  faEnvelope,
   faPhone,
   faUsers,
   faCalendarCheck,
@@ -16,7 +16,6 @@ import { Badge } from '@/components/ui/badge';
 import { SlotPicker } from './SlotPicker';
 import { useStripeCheckout } from '@/hooks/useStripeCheckout';
 import {
-  isValidEmail,
   isValidPhone,
   isValidCapacity,
   isValidTimeSlot,
@@ -33,13 +32,13 @@ interface BookingFormProps {
 
 export function BookingForm({ room, selectedDate, selectedSlot }: BookingFormProps) {
   const { createCheckout, loading, error } = useStripeCheckout();
+  const { user } = useUser();
 
   const [formData, setFormData] = useState({
     date: selectedDate || '',
     startTime: selectedSlot?.start || '',
     endTime: selectedSlot?.end || '',
-    customerName: '',
-    customerEmail: '',
+    customerName: user?.fullName || '',
     customerPhone: '',
     numberOfPeople: '',
   });
@@ -59,10 +58,6 @@ export function BookingForm({ room, selectedDate, selectedSlot }: BookingFormPro
 
     if (!formData.customerName || formData.customerName.length < 2) {
       newErrors.customerName = 'Le nom doit contenir au moins 2 caractères';
-    }
-
-    if (!formData.customerEmail || !isValidEmail(formData.customerEmail)) {
-      newErrors.customerEmail = 'Email invalide';
     }
 
     if (!formData.customerPhone || !isValidPhone(formData.customerPhone)) {
@@ -107,7 +102,7 @@ export function BookingForm({ room, selectedDate, selectedSlot }: BookingFormPro
       startTime: formData.startTime,
       endTime: formData.endTime,
       customerName: formData.customerName,
-      customerEmail: formData.customerEmail,
+      customerEmail: user?.primaryEmailAddress?.emailAddress || '',
       customerPhone: formData.customerPhone,
       numberOfPeople: parseInt(formData.numberOfPeople),
       totalPrice,
@@ -123,7 +118,7 @@ export function BookingForm({ room, selectedDate, selectedSlot }: BookingFormPro
   const isFormValid = () => {
     return (
       formData.customerName.length >= 2 &&
-      formData.customerEmail.includes('@') &&
+      user?.primaryEmailAddress?.emailAddress &&
       formData.customerPhone.length >= 10 &&
       formData.numberOfPeople &&
       parseInt(formData.numberOfPeople) > 0 &&
@@ -179,34 +174,6 @@ export function BookingForm({ room, selectedDate, selectedSlot }: BookingFormPro
             />
             {errors.customerName && (
               <p className="text-sm text-destructive">{errors.customerName}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium flex items-center gap-2">
-              <FontAwesomeIcon icon={faEnvelope} className="h-4 w-4 text-muted-foreground" />
-              Email
-            </label>
-            <Input
-              type="email"
-              value={formData.customerEmail}
-              onChange={(e) => {
-                const value = e.target.value;
-                setFormData({ ...formData, customerEmail: value });
-                if (value && !isValidEmail(value)) {
-                  setErrors({ ...errors, customerEmail: 'Format email invalide' });
-                } else if (errors.customerEmail) {
-                  const newErrors = { ...errors };
-                  delete newErrors.customerEmail;
-                  setErrors(newErrors);
-                }
-              }}
-              placeholder="jean.dupont@example.com"
-              required
-              disabled={loading}
-            />
-            {errors.customerEmail && (
-              <p className="text-sm text-destructive">{errors.customerEmail}</p>
             )}
           </div>
 

@@ -68,18 +68,21 @@ docker compose up -d
 
 ### Pour les utilisateurs
 
-- **Inscription/Connexion** - Email, via Clerk
+- **Inscription/Connexion** - Magic link via Clerk
 - **Catalogue de salles** - Photos, équipements, capacité, tarifs
 - **Réservation interactive** - Calendrier avec créneaux disponibles
-- **Paiement sécurisé** - Stripe Checkout avec confirmation par email
-- **Mes réservations** - Historique et gestion
+- **Paiement sécurisé** - Stripe Checkout avec confirmation immédiate
+- **Notifications email** - 4 types d'emails automatiques (confirmation, modification, annulation, rappel J-1)
+- **Mes réservations** - Historique complet et gestion
 - **Annulation** - Remboursement automatique selon les conditions
+- **Profil & sécurité** - Gestion via Clerk (2FA, suppression compte)
 
 ### Pour les administrateurs
 
 - **Dashboard** - Vue d'ensemble avec statistiques clés
 - **Gestion des salles** - Créer, modifier, activer/désactiver
 - **Toutes les réservations** - Filtres et changement de statut
+- **Notifications email** - 2 types d'emails automatiques (nouvelles réservations, annulations)
 - **Utilisateurs actifs** - Suivi de l'activité
 - **Top salles** - Salles les plus réservées
 - **Revenus** - Suivi des paiements
@@ -108,6 +111,7 @@ docker compose up -d
 - **PostgreSQL 15** - Base de données relationnelle
 - **Stripe API** - Webhooks et paiements
 - **Clerk SDK** - Vérification JWT
+- **Nodemailer** - Service d'envoi d'emails (Gmail SMTP)
 
 ### DevOps
 
@@ -142,7 +146,8 @@ BookRoom/
     │   ├── controllers/           # Logique métier
     │   ├── middlewares/           # Auth, error handling
     │   ├── routes/                # Routes Express
-    │   └── services/              # Services externes (Stripe)
+    │   ├── services/              # Services externes (Stripe, Email)
+    │   └── scripts/               # Scripts utilitaires (rappels J-1)
     ├── prisma/
     │   ├── schema.prisma          # Schéma de base de données
     │   ├── migrations/            # Migrations SQL
@@ -152,7 +157,7 @@ BookRoom/
 
 ---
 
-## 🔧 Configuration
+## Configuration
 
 ### Variables d'environnement
 
@@ -171,9 +176,7 @@ DATABASE_URL=postgresql://bookroom:changez_ce_mot_de_passe@postgres:5432/bookroo
 # -----------------------------------------------------------------------------
 
 CLERK_PUBLISHABLE_KEY=pk_test_...
-
 CLERK_SECRET_KEY=sk_test_...
-
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
 
 # -----------------------------------------------------------------------------
@@ -186,7 +189,57 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_MODE=test
 
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+
+# -----------------------------------------------------------------------------
+# Email Service https://myaccount.google.com/security
+# -----------------------------------------------------------------------------
+
+GMAIL_USER=votre.email@gmail.com
+GMAIL_APP_PASSWORD=votre_mot_de_passe_app
+
+EMAIL_FROM=BookRoom <votre.email@gmail.com>
+ADMIN_EMAIL=votre.email.admin@gmail.com
 ```
+
+---
+
+## Système d'emails
+
+BookRoom envoie **6 types d'emails automatiques** via Nodemailer + Gmail SMTP (gratuit, 500 emails/jour) :
+
+### Pour les utilisateurs
+
+1. **Confirmation de réservation** - Après paiement réussi
+2. **Modification de réservation** - Lors de changements
+3. **Annulation de réservation** - Confirmation d'annulation
+4. **Rappel J-1** - 24h avant la réservation (via script cron)
+
+### Pour les administrateurs
+
+5. **Nouvelle réservation** - Notification de nouvelle réservation
+6. **Annulation par utilisateur** - Notification d'annulation
+
+### Configuration Gmail
+
+1. Aller sur https://myaccount.google.com/security
+2. Activer "2-Step Verification"
+3. Créer un "App Password" (Mail)
+4. Ajouter les variables dans `.env` :
+
+```env
+GMAIL_USER=votre.email@gmail.com
+GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
+EMAIL_FROM=BookRoom <votre.email@gmail.com>
+ADMIN_EMAIL=votre.email.admin@gmail.com
+```
+
+### Fonctionnalités
+
+- ✅ **Templates HTML** professionnels avec styles inline
+- ✅ **Retry automatique** - 3 tentatives avec backoff exponentiel
+- ✅ **Non-bloquant** - L'envoi d'email n'empêche pas la réservation
+- ✅ **Logs détaillés** - Suivi des succès/échecs
+- ✅ **Script de rappels** - `npm run reminders` pour les notifications J-1
 
 ---
 
@@ -260,21 +313,12 @@ docker compose exec api npx prisma studio   # Interface graphique
 docker compose exec api npx prisma db seed  # Données de test
 docker compose exec api npx prisma migrate dev --name ma_migration
 
+# Emails
+docker compose exec api npm run reminders   # Envoyer les rappels J-1
+
 # Reconstruire après modifications
 docker compose up -d --build
 ```
-
----
-
-## Optimisations
-
-Le projet a été optimisé pour les performances :
-
-- ✅ **-500ms** délais artificiels supprimés
-- ✅ **-39%** taille du bundle (lazy loading)
-- ✅ **-87%** code dupliqué (utilitaires)
-- ✅ **-60%** re-renders inutiles (useCallback/useMemo)
-- ✅ **+40%** vitesse de chargement
 
 ---
 

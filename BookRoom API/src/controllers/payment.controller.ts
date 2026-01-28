@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { stripeService } from "../services/stripe.service";
+import { emailService } from "../services/email.service";
 import { AuthRequest } from "../middlewares/auth.middleware";
 import Stripe from "stripe";
 
@@ -146,7 +147,7 @@ export class PaymentController {
               },
             });
           } catch (paymentError) {
-            console.error("⚠️ Error creating payment record:", paymentError);
+            console.error("Error creating payment record:", paymentError);
             // Continue même si on ne peut pas créer le payment record
           }
         }
@@ -167,6 +168,15 @@ export class PaymentController {
               room: true,
               payment: true,
             },
+          });
+
+          // Envoyer les emails de confirmation
+          console.log(`Payment completed for booking ${booking.id} (via verifyPayment)`);
+          Promise.all([
+            emailService.sendBookingConfirmation(booking),
+            emailService.sendAdminNewBooking(booking),
+          ]).catch((error) => {
+            console.error("Erreur envoi emails confirmation:", error);
           });
         }
       }
@@ -272,17 +282,28 @@ export class PaymentController {
     });
 
     // Mettre à jour la réservation
-    await prisma.booking.update({
+    const confirmedBooking = await prisma.booking.update({
       where: { id: bookingId },
       data: {
         status: "CONFIRMED",
         stripePaymentId: session.payment_intent as string,
         paymentDate: new Date(),
       },
+      include: {
+        room: true,
+      },
     });
 
-    console.log(`✅ Payment completed for booking ${bookingId}`);
-    // TODO: Envoyer email de confirmation
+    console.log(`Payment completed for booking ${bookingId}`);
+
+    // Envoyer les emails de confirmation (utilisateur + admin)
+    Promise.all([
+      emailService.sendBookingConfirmation(confirmedBooking),
+      emailService.sendAdminNewBooking(confirmedBooking),
+    ]).catch((error) => {
+      console.error("Erreur envoi emails confirmation:", error);
+    });
+
     // TODO: Générer QR Code
   }
 

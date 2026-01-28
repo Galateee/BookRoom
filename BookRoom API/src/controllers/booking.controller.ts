@@ -1,6 +1,7 @@
 import { Response } from "express";
 import prisma from "../config/database";
 import { AuthRequest } from "../middlewares/auth.middleware";
+import { emailService } from "../services/email.service";
 
 /**
  * POST /api/bookings
@@ -408,6 +409,13 @@ export async function updateBooking(req: AuthRequest, res: Response): Promise<vo
         totalPrice,
         status: "MODIFIED",
       },
+      include: {
+        room: true,
+      },
+    });
+
+    emailService.sendBookingModification(updatedBooking).catch((error) => {
+      console.error("Erreur envoi email modification:", error);
     });
 
     res.json({
@@ -485,12 +493,22 @@ export async function cancelBooking(req: AuthRequest, res: Response): Promise<vo
     }
 
     // Annuler la réservation
-    await prisma.booking.update({
+    const cancelledBooking = await prisma.booking.update({
       where: { id },
       data: {
         status: "CANCELLED_BY_USER",
         cancelledAt: new Date(),
       },
+      include: {
+        room: true,
+      },
+    });
+
+    Promise.all([
+      emailService.sendBookingCancellation(cancelledBooking),
+      emailService.sendAdminBookingCancellation(cancelledBooking),
+    ]).catch((error) => {
+      console.error("Erreur envoi emails annulation:", error);
     });
 
     res.json({
