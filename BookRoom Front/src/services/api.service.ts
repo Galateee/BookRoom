@@ -63,9 +63,19 @@ class ApiService {
     return this.request<Booking[]>('/bookings/my-bookings');
   }
 
-  async cancelBooking(bookingId: string): Promise<ApiResponse<Booking>> {
-    return this.request<Booking>(`/bookings/${bookingId}/cancel`, {
-      method: 'PATCH',
+  async updateBooking(
+    bookingId: string,
+    data: { date?: string; startTime?: string; endTime?: string; numberOfPeople?: number }
+  ): Promise<ApiResponse<Booking>> {
+    return this.request<Booking>(`/bookings/${bookingId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async cancelBooking(bookingId: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/bookings/${bookingId}`, {
+      method: 'DELETE',
     });
   }
 
@@ -138,6 +148,22 @@ class ApiService {
     return this.request(`/admin/bookings/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
+    });
+  }
+
+  async cancelBookingAdmin(bookingId: string): Promise<ApiResponse<Booking>> {
+    return this.request<Booking>(`/admin/bookings/${bookingId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async updateBookingAdmin(
+    bookingId: string,
+    data: { date?: string; startTime?: string; endTime?: string; numberOfPeople?: number }
+  ): Promise<ApiResponse<Booking>> {
+    return this.request<Booking>(`/admin/bookings/${bookingId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
     });
   }
 

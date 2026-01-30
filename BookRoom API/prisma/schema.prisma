@@ -32,6 +32,7 @@ model Booking {
   room           Room          @relation(fields: [roomId], references: [id])
   userId         String        // Clerk User ID
   date           String        // Format: YYYY-MM-DD
+  originalDate   String?       // Date originale
   startTime      String        // Format: HH:MM
   endTime        String        // Format: HH:MM
   customerName   String

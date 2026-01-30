@@ -1,6 +1,8 @@
 import { Response } from "express";
 import { AuthRequest } from "../middlewares/auth.middleware";
 import prisma from "../config/database";
+import { stripeService } from "../services/stripe.service";
+import { emailService } from "../services/email.service";
 
 /**
  * Récupérer toutes les salles (actives et désactivées) pour l'admin
@@ -329,12 +331,17 @@ export async function getAllBookings(req: AuthRequest, res: Response): Promise<v
           },
         },
       },
-      orderBy: [{ date: "desc" }, { startTime: "desc" }],
+      orderBy: { createdAt: "desc" },
     });
+
+    const formattedBookings = bookings.map((booking) => ({
+      ...booking,
+      roomName: booking.room.name,
+    }));
 
     res.json({
       success: true,
-      data: bookings,
+      data: formattedBookings,
     });
   } catch (error) {
     console.error("Erreur lors de la récupération des réservations:", error);
@@ -414,6 +421,334 @@ export async function updateBookingStatus(req: AuthRequest, res: Response): Prom
       error: {
         code: "INTERNAL_ERROR",
         message: "Erreur lors de la mise à jour du statut",
+      },
+    });
+  }
+}
+
+/**
+ * Modifier une réservation (admin) - sans vérification userId
+ */
+export async function updateBooking(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const id = req.params.id as string;
+    const { date, startTime, endTime, numberOfPeople } = req.body;
+
+    const existingBooking = await prisma.booking.findUnique({
+      where: { id },
+    });
+
+    if (!existingBooking) {
+      res.status(404).json({
+        success: false,
+        error: {
+          code: "BOOKING_NOT_FOUND",
+          message: "Réservation non trouvée",
+        },
+      });
+      return;
+    }
+
+    const room = await prisma.room.findUnique({
+      where: { id: existingBooking.roomId },
+    });
+
+    if (!room) {
+      res.status(404).json({
+        success: false,
+        error: {
+          code: "ROOM_NOT_FOUND",
+          message: "Salle non trouvée",
+        },
+      });
+      return;
+    }
+
+    const cancelledStatuses = [
+      "CANCELLED_BY_USER",
+      "CANCELLED_BY_ADMIN",
+      "CANCELLED_NO_PAYMENT",
+      "REFUNDED",
+    ];
+    if (
+      cancelledStatuses.includes(existingBooking.status) ||
+      existingBooking.status === "COMPLETED"
+    ) {
+      res.status(400).json({
+        success: false,
+        error: {
+          code: "BOOKING_NOT_MODIFIABLE",
+          message: "Cette réservation ne peut plus être modifiée",
+        },
+      });
+      return;
+    }
+
+    if (date || startTime || endTime) {
+      const newDate = date || existingBooking.date;
+      const newStartTime = startTime || existingBooking.startTime;
+      const newEndTime = endTime || existingBooking.endTime;
+
+      const conflict = await prisma.booking.findFirst({
+        where: {
+          roomId: existingBooking.roomId,
+          date: newDate,
+          id: { not: id },
+          status: {
+            in: [
+              "PENDING_PAYMENT",
+              "PAYMENT_RECEIVED",
+              "CONFIRMED",
+              "MODIFIED",
+              "CHECKED_IN",
+              "IN_PROGRESS",
+            ],
+          },
+          OR: [
+            { startTime: { lte: newStartTime }, endTime: { gt: newStartTime } },
+            { startTime: { lt: newEndTime }, endTime: { gte: newEndTime } },
+            { startTime: { gte: newStartTime }, endTime: { lte: newEndTime } },
+          ],
+        },
+      });
+
+      if (conflict) {
+        res.status(409).json({
+          success: false,
+          error: {
+            code: "TIME_CONFLICT",
+            message: "Ce créneau est déjà réservé",
+          },
+        });
+        return;
+      }
+    }
+
+    const finalStartTime = startTime || existingBooking.startTime;
+    const finalEndTime = endTime || existingBooking.endTime;
+    const startHour = parseInt(finalStartTime.split(":")[0]);
+    const endHour = parseInt(finalEndTime.split(":")[0]);
+    const hours = endHour - startHour;
+    const totalPrice = hours * room.pricePerHour;
+
+    const updatedBooking = await prisma.booking.update({
+      where: { id },
+      data: {
+        date: date || existingBooking.date,
+        originalDate: ((existingBooking as any).originalDate || existingBooking.date) as any,
+        startTime: finalStartTime,
+        endTime: finalEndTime,
+        numberOfPeople: numberOfPeople || existingBooking.numberOfPeople,
+        totalPrice,
+        status: "MODIFIED",
+      },
+      include: {
+        room: true,
+      },
+    });
+
+    emailService.sendBookingModification(updatedBooking as any).catch((error) => {
+      console.error("Erreur envoi email modification:", error);
+    });
+
+    res.json({
+      success: true,
+      data: {
+        bookingId: updatedBooking.id,
+        roomName: room.name,
+        date: updatedBooking.date,
+        startTime: updatedBooking.startTime,
+        endTime: updatedBooking.endTime,
+        totalPrice: updatedBooking.totalPrice,
+        status: updatedBooking.status,
+      },
+    });
+  } catch (error) {
+    console.error("Erreur lors de la modification de la réservation:", error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Erreur lors de la modification de la réservation",
+      },
+    });
+  }
+}
+
+/**
+ * Annuler une réservation (admin)
+ */
+export async function cancelBooking(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const id = req.params.id as string;
+
+    const existingBooking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        room: {
+          select: {
+            name: true,
+            imageUrl: true,
+          },
+        },
+        refunds: true,
+      },
+    });
+
+    if (!existingBooking) {
+      res.status(404).json({
+        success: false,
+        error: {
+          code: "BOOKING_NOT_FOUND",
+          message: "Réservation non trouvée",
+        },
+      });
+      return;
+    }
+
+    const cancelledStatuses = [
+      "CANCELLED_BY_USER",
+      "CANCELLED_BY_ADMIN",
+      "CANCELLED_NO_PAYMENT",
+      "REFUNDED",
+    ];
+    if (cancelledStatuses.includes(existingBooking.status)) {
+      res.status(400).json({
+        success: false,
+        error: {
+          code: "ALREADY_CANCELLED",
+          message: "Cette réservation est déjà annulée",
+        },
+      });
+      return;
+    }
+
+    if (existingBooking.refunds && existingBooking.refunds.length > 0) {
+      res.status(400).json({
+        success: false,
+        error: {
+          code: "ALREADY_REFUNDED",
+          message: "Cette réservation a déjà été remboursée",
+        },
+      });
+      return;
+    }
+
+    if (existingBooking.stripePaymentId) {
+      const refundAmount = stripeService.calculateRefundAmount(existingBooking);
+
+      if (refundAmount > 0) {
+        const stripeRefund = await stripeService.createRefund(
+          existingBooking.stripePaymentId,
+          refundAmount,
+          "CANCELLED_BY_ADMIN"
+        );
+
+        await prisma.refund.create({
+          data: {
+            bookingId: id,
+            amount: refundAmount,
+            amountCents: Math.round(refundAmount * 100),
+            stripeRefundId: stripeRefund.id,
+            reason: "CANCELLED_BY_ADMIN",
+            status: "SUCCEEDED",
+            processedAt: new Date(),
+          },
+        });
+
+        if (refundAmount === existingBooking.totalPrice) {
+          await prisma.payment.update({
+            where: { bookingId: id },
+            data: { status: "REFUNDED" },
+          });
+        } else {
+          await prisma.payment.update({
+            where: { bookingId: id },
+            data: { status: "PARTIALLY_REFUNDED" },
+          });
+        }
+
+        const booking = await prisma.booking.update({
+          where: { id },
+          data: {
+            status: "REFUNDED",
+            stripeRefundId: stripeRefund.id,
+            cancelledAt: new Date(),
+          },
+          include: {
+            room: true,
+          },
+        });
+
+        Promise.all([
+          emailService.sendBookingCancellation(booking),
+          emailService.sendAdminBookingCancellation(booking),
+        ]).catch((error) => {
+          console.error("Erreur lors de l'envoi des emails:", error);
+        });
+
+        res.json({
+          success: true,
+          data: booking,
+          message: `Réservation annulée et remboursement de ${refundAmount}€ effectué`,
+        });
+      } else {
+        const booking = await prisma.booking.update({
+          where: { id },
+          data: {
+            status: "CANCELLED_BY_ADMIN",
+            cancelledAt: new Date(),
+          },
+          include: {
+            room: true,
+          },
+        });
+
+        Promise.all([
+          emailService.sendBookingCancellation(booking),
+          emailService.sendAdminBookingCancellation(booking),
+        ]).catch((error) => {
+          console.error("Erreur lors de l'envoi des emails:", error);
+        });
+
+        res.json({
+          success: true,
+          data: booking,
+          message: "Réservation annulée (aucun remboursement - délai < 24h)",
+        });
+      }
+    } else {
+      const booking = await prisma.booking.update({
+        where: { id },
+        data: {
+          status: "CANCELLED_BY_ADMIN",
+          cancelledAt: new Date(),
+        },
+        include: {
+          room: true,
+        },
+      });
+
+      Promise.all([
+        emailService.sendBookingCancellation(booking),
+        emailService.sendAdminBookingCancellation(booking),
+      ]).catch((error) => {
+        console.error("Erreur lors de l'envoi des emails:", error);
+      });
+
+      res.json({
+        success: true,
+        data: booking,
+        message: "Réservation annulée (aucun paiement trouvé)",
+      });
+    }
+  } catch (error) {
+    console.error("Erreur lors de l'annulation de la réservation:", error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Erreur lors de l'annulation de la réservation",
       },
     });
   }

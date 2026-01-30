@@ -205,6 +205,8 @@ export async function getMyBookings(req: AuthRequest, res: Response): Promise<vo
 
     const formattedBookings = bookings.map((b: (typeof bookings)[0]) => ({
       bookingId: b.id,
+      id: b.id,
+      roomId: b.roomId,
       roomName: b.room.name,
       date: b.date,
       startTime: b.startTime,
@@ -403,6 +405,7 @@ export async function updateBooking(req: AuthRequest, res: Response): Promise<vo
       where: { id },
       data: {
         date: date || existingBooking.date,
+        originalDate: ((existingBooking as any).originalDate || existingBooking.date) as any,
         startTime: finalStartTime,
         endTime: finalEndTime,
         numberOfPeople: numberOfPeople || existingBooking.numberOfPeople,
@@ -414,7 +417,7 @@ export async function updateBooking(req: AuthRequest, res: Response): Promise<vo
       },
     });
 
-    emailService.sendBookingModification(updatedBooking).catch((error) => {
+    emailService.sendBookingModification(updatedBooking as any).catch((error) => {
       console.error("Erreur envoi email modification:", error);
     });
 

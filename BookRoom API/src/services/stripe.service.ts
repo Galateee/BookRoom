@@ -157,7 +157,8 @@ export class StripeService {
    */
   calculateRefundAmount(booking: any): number {
     const now = new Date();
-    const bookingDateTime = new Date(`${booking.date}T${booking.startTime}`);
+    const bookingDate = booking.originalDate || booking.date;
+    const bookingDateTime = new Date(`${bookingDate}T${booking.startTime}`);
     const hoursUntilBooking = (bookingDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
     if (hoursUntilBooking >= 48) {

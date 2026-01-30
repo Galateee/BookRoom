@@ -8,6 +8,8 @@ import {
   toggleRoomStatus,
   getAllBookings,
   updateBookingStatus,
+  updateBooking,
+  cancelBooking,
   getStatistics,
 } from "../controllers/admin.controller";
 
@@ -23,6 +25,8 @@ router.delete("/rooms/:id", requireAdmin, deleteRoom);
 // Routes pour la gestion des réservations
 router.get("/bookings", requireAdmin, getAllBookings);
 router.patch("/bookings/:id/status", requireAdmin, updateBookingStatus);
+router.put("/bookings/:id", requireAdmin, updateBooking);
+router.delete("/bookings/:id", requireAdmin, cancelBooking);
 
 // Routes pour les statistiques
 router.get("/statistics", requireAdmin, getStatistics);

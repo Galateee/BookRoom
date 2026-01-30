@@ -42,6 +42,7 @@ export class PaymentController {
           roomId: bookingData.roomId,
           userId,
           date: bookingData.date,
+          originalDate: bookingData.date as any,
           startTime: bookingData.startTime,
           endTime: bookingData.endTime,
           customerName: bookingData.customerName,
@@ -362,13 +363,13 @@ export class PaymentController {
       // Récupérer la réservation
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
-        include: { payment: true },
+        include: { payment: true, refunds: true },
       });
 
       if (!booking) {
         return res.status(404).json({
           success: false,
-          error: { code: "BOOKING_NOT_FOUND", message: "Booking not found" },
+          error: { code: "BOOKING_NOT_FOUND", message: "Réservation introuvable" },
         });
       }
 
@@ -376,7 +377,21 @@ export class PaymentController {
       if (booking.userId !== userId) {
         return res.status(403).json({
           success: false,
-          error: { code: "FORBIDDEN", message: "You can only refund your own bookings" },
+          error: {
+            code: "FORBIDDEN",
+            message: "Vous ne pouvez rembourser que vos propres réservations",
+          },
+        });
+      }
+
+      // Vérifier si un remboursement existe déjà
+      if (booking.refunds && booking.refunds.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: "ALREADY_REFUNDED",
+            message: "Cette réservation a déjà été remboursée",
+          },
         });
       }
 
@@ -384,7 +399,7 @@ export class PaymentController {
       if (!booking.stripePaymentId) {
         return res.status(400).json({
           success: false,
-          error: { code: "NO_PAYMENT", message: "No payment found for this booking" },
+          error: { code: "NO_PAYMENT", message: "Aucun paiement trouvé pour cette réservation" },
         });
       }
 
@@ -396,7 +411,8 @@ export class PaymentController {
           success: false,
           error: {
             code: "NO_REFUND_AVAILABLE",
-            message: "No refund available. Cancellation is less than 24 hours before the booking.",
+            message:
+              "Aucun remboursement possible. L'annulation est effectuée moins de 24h avant la réservation.",
           },
         });
       }
@@ -405,7 +421,7 @@ export class PaymentController {
       const stripeRefund = await stripeService.createRefund(
         booking.stripePaymentId,
         refundAmount,
-        reason || "CANCELLED_BY_USER"
+        "CANCELLED_BY_USER"
       );
 
       // Enregistrer le remboursement
@@ -415,19 +431,22 @@ export class PaymentController {
           amount: refundAmount,
           amountCents: Math.round(refundAmount * 100),
           stripeRefundId: stripeRefund.id,
-          reason: reason || "CANCELLED_BY_USER",
+          reason: "CANCELLED_BY_USER",
           status: "SUCCEEDED",
           processedAt: new Date(),
         },
       });
 
       // Mettre à jour le statut de la réservation
-      await prisma.booking.update({
+      const updatedBooking = await prisma.booking.update({
         where: { id: bookingId },
         data: {
           status: "REFUNDED",
           stripeRefundId: stripeRefund.id,
           cancelledAt: new Date(),
+        },
+        include: {
+          room: true,
         },
       });
 
@@ -443,6 +462,14 @@ export class PaymentController {
           data: { status: "PARTIALLY_REFUNDED" },
         });
       }
+
+      // Envoyer les emails d'annulation
+      Promise.all([
+        emailService.sendBookingCancellation(updatedBooking),
+        emailService.sendAdminBookingCancellation(updatedBooking),
+      ]).catch((error) => {
+        console.error("Erreur envoi emails annulation:", error);
+      });
 
       res.json({
         success: true,

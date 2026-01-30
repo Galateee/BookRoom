@@ -33,6 +33,7 @@ CREATE TABLE "bookings" (
     "roomId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "date" TEXT NOT NULL,
+    "originalDate" TEXT,
     "startTime" TEXT NOT NULL,
     "endTime" TEXT NOT NULL,
     "customerName" TEXT NOT NULL,

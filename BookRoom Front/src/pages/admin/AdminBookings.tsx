@@ -12,11 +12,14 @@ import {
   faFilter,
   faSpinner,
   faExclamationTriangle,
+  faSearch,
+  faEdit,
 } from '@fortawesome/free-solid-svg-icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -28,6 +31,7 @@ import {
 import { useAdminBookings } from '@/hooks/useAdminBookings';
 import { getStatusLabel, getStatusVariant } from '@/lib/booking-status';
 import type { Booking } from '@/types';
+import { ModifyBookingDialog } from '@/components/booking/ModifyBookingDialog';
 
 export default function AdminBookings() {
   const {
@@ -37,15 +41,39 @@ export default function AdminBookings() {
     refetch,
     cancelBooking,
     updateBookingStatus,
+    updateBooking,
   } = useAdminBookings();
-  const [filter, setFilter] = useState<'all' | 'confirmed' | 'cancelled'>('all');
+  const [filter, setFilter] = useState<'all' | 'confirmed' | 'cancelled' | 'modified' | 'refunded'>(
+    'all'
+  );
+  const [searchQuery, setSearchQuery] = useState('');
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
   const [actionType, setActionType] = useState<'cancel' | 'complete'>('cancel');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [modifyDialogOpen, setModifyDialogOpen] = useState(false);
+  const [bookingToModify, setBookingToModify] = useState<Booking | null>(null);
 
-  const bookings =
-    filter === 'all' ? allBookings : allBookings.filter((b) => b.status.toLowerCase() === filter);
+  const statusFilteredBookings =
+    filter === 'all'
+      ? allBookings
+      : allBookings.filter((b) => {
+          const status = b.status.toLowerCase();
+          if (filter === 'modified') return status === 'modified';
+          if (filter === 'refunded') return status === 'refunded';
+          return status === filter;
+        });
+
+  const bookings = searchQuery
+    ? statusFilteredBookings.filter((b) => {
+        const query = searchQuery.toLowerCase();
+        return (
+          b.customerName.toLowerCase().includes(query) ||
+          b.customerEmail.toLowerCase().includes(query) ||
+          b.roomName?.toLowerCase().includes(query)
+        );
+      })
+    : statusFilteredBookings;
 
   const handleActionClick = (booking: Booking, action: 'cancel' | 'complete') => {
     setSelectedBooking(booking);
@@ -139,8 +167,25 @@ export default function AdminBookings() {
           </div>
         </div>
 
+        {/* Barre de recherche */}
+        <div className="mb-4">
+          <div className="relative">
+            <FontAwesomeIcon
+              icon={faSearch}
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+            />
+            <Input
+              type="text"
+              placeholder="Rechercher par nom, email ou salle..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+
         {/* Filtres */}
-        <div className="flex items-center gap-2 mb-6">
+        <div className="flex items-center gap-2 mb-6 flex-wrap">
           <FontAwesomeIcon icon={faFilter} className="h-4 w-4 text-muted-foreground" />
           <Button
             variant={filter === 'all' ? 'default' : 'outline'}
@@ -157,11 +202,25 @@ export default function AdminBookings() {
             Confirmées
           </Button>
           <Button
+            variant={filter === 'modified' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('modified')}
+          >
+            Modifiées
+          </Button>
+          <Button
             variant={filter === 'cancelled' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setFilter('cancelled')}
           >
             Annulées
+          </Button>
+          <Button
+            variant={filter === 'refunded' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('refunded')}
+          >
+            Remboursées
           </Button>
         </div>
       </div>
@@ -221,17 +280,33 @@ export default function AdminBookings() {
                 </div>
               </div>
 
-              {booking.status === 'confirmed' && (
+              {['confirmed', 'pending_payment', 'payment_received', 'modified'].some(
+                (status) => booking.status.toLowerCase() === status
+              ) && (
                 <div className="flex gap-2 mt-4 pt-4 border-t">
                   <Button
                     variant="outline"
                     size="sm"
                     className="gap-2"
-                    onClick={() => handleActionClick(booking, 'complete')}
+                    onClick={() => {
+                      setBookingToModify(booking);
+                      setModifyDialogOpen(true);
+                    }}
                   >
-                    <FontAwesomeIcon icon={faCheck} className="h-4 w-4" />
-                    Marquer comme terminée
+                    <FontAwesomeIcon icon={faEdit} className="h-4 w-4" />
+                    Modifier
                   </Button>
+                  {booking.status.toLowerCase() === 'confirmed' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => handleActionClick(booking, 'complete')}
+                    >
+                      <FontAwesomeIcon icon={faCheck} className="h-4 w-4" />
+                      Marquer comme terminée
+                    </Button>
+                  )}
                   <Button
                     variant="destructive"
                     size="sm"
@@ -282,6 +357,22 @@ export default function AdminBookings() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de modification */}
+      {bookingToModify && (
+        <ModifyBookingDialog
+          open={modifyDialogOpen}
+          onOpenChange={setModifyDialogOpen}
+          booking={bookingToModify}
+          isAdmin={true}
+          onUpdateAdmin={updateBooking}
+          onSuccess={() => {
+            setModifyDialogOpen(false);
+            setBookingToModify(null);
+            refetch();
+          }}
+        />
+      )}
     </div>
   );
 }

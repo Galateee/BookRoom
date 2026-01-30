@@ -23,11 +23,13 @@
 ### Points forts
 
 - **Interface moderne** - Design responsive avec Tailwind CSS et shadcn/ui
-- **Authentification robuste** - Clerk
-- **Paiement sécurisé** - Intégration complète Stripe avec webhooks
-- **Dashboard admin** - Statistiques, gestion des salles et réservations
-- **Docker ready** - Déploiement en une commande
-- **Performance optimisée** - Lazy loading, code splitting
+- **Authentification robuste** - Clerk avec gestion des rôles
+- **Paiement sécurisé** - Intégration complète Stripe avec webhooks et remboursements automatiques
+- **Protection anti-abuse** - Système originalDate empêchant la manipulation des remboursements
+- **Dashboard admin** - Statistiques en temps réel, gestion complète des salles et réservations
+- **Emails transactionnels** - 6 types d'emails automatiques via Nodemailer
+- **Docker ready** - Déploiement en une commande avec hot-reload
+- **Performance optimisée** - Lazy loading, code splitting, React 19
 
 ---
 
@@ -69,23 +71,28 @@ docker compose up -d
 ### Pour les utilisateurs
 
 - **Inscription/Connexion** - Magic link via Clerk
-- **Catalogue de salles** - Photos, équipements, capacité, tarifs
-- **Réservation interactive** - Calendrier avec créneaux disponibles
-- **Paiement sécurisé** - Stripe Checkout avec confirmation immédiate
-- **Notifications email** - 4 types d'emails automatiques (confirmation, modification, annulation, rappel J-1)
-- **Mes réservations** - Historique complet et gestion
-- **Annulation** - Remboursement automatique selon les conditions
-- **Profil & sécurité** - Gestion via Clerk (2FA, suppression compte)
+- **Catalogue de salles** - Photos, équipements, capacité, tarifs en temps réel
+- **Réservation interactive** - Calendrier avec créneaux disponibles et vérification conflits
+- **Paiement sécurisé** - Stripe Checkout avec confirmation instantanée et webhooks
+- **Notifications email** - Confirmation, modification, annulation, rappel J-1
+- **Mes réservations** - Historique complet avec filtres et gestion
+- **Modification** - Changement date/heure/participants avec recalcul automatique du prix
+- **Annulation flexible** - Remboursement automatique selon politique (100%/50%/0%)
+- **Protection** - Le système empêche la manipulation des dates pour obtenir de meilleurs remboursements
+- **Profil & sécurité** - Gestion complète via Clerk (2FA, sessions, suppression compte)
 
 ### Pour les administrateurs
 
-- **Dashboard** - Vue d'ensemble avec statistiques clés
-- **Gestion des salles** - Créer, modifier, activer/désactiver
-- **Toutes les réservations** - Filtres et changement de statut
-- **Notifications email** - 2 types d'emails automatiques (nouvelles réservations, annulations)
-- **Utilisateurs actifs** - Suivi de l'activité
-- **Top salles** - Salles les plus réservées
-- **Revenus** - Suivi des paiements
+- **Dashboard** - Vue d'ensemble avec statistiques clés (revenus, réservations, utilisateurs)
+- **Gestion des salles** - CRUD complet, activation/désactivation, protection suppression
+- **Gestion des réservations** - Liste complète avec filtres avancés (status, salle, dates)
+- **Modification admin** - Changement de n'importe quelle réservation sans restriction userId
+- **Annulation admin** - Remboursement Stripe automatique + emails (client + admin)
+- **Changement de statut** - Mise à jour manuelle des statuts de réservation
+- **Notifications email** - Alerte sur nouvelles réservations et annulations
+- **Utilisateurs actifs** - Suivi de l'activité en temps réel
+- **Top salles** - Classement des salles les plus réservées avec statistiques
+- **Revenus mensuels** - Suivi des paiements et remboursements
 
 ---
 
@@ -257,11 +264,13 @@ ADMIN_EMAIL=votre.email.admin@gmail.com
 
 **Booking** - Réservations
 
-- 14 statuts différents (PENDING_PAYMENT, CONFIRMED, etc.)
-- Informations client
-- Dates et horaires
-- Prix total
-- Liens avec paiements et remboursements
+- 14 statuts différents (PENDING_PAYMENT, CONFIRMED, MODIFIED, CANCELLED_BY_USER, CANCELLED_BY_ADMIN, REFUNDED, etc.)
+- Champ **originalDate** pour protection anti-abuse des remboursements
+- Informations client complètes
+- Dates et horaires avec validation conflits
+- Prix total avec calcul automatique
+- Liens Stripe (sessionId, paymentId, refundId)
+- Relations avec paiements et remboursements
 
 **Payment** - Paiements
 
@@ -272,9 +281,90 @@ ADMIN_EMAIL=votre.email.admin@gmail.com
 
 **Refund** - Remboursements
 
-- Montant et pourcentage
-- Raison
-- Statut Stripe
+- Montant et pourcentage calculés automatiquement
+- Raison (CANCELLED_BY_USER, CANCELLED_BY_ADMIN, etc.)
+- Statut Stripe (PENDING, PROCESSING, SUCCEEDED, FAILED)
+- Politique: 100% si ≥48h, 50% si 24-48h, 0% si <24h avant **date originale**
+- Protection anti-abuse: calcul toujours basé sur originalDate
+
+---
+
+## Protection Anti-Abuse des Remboursements
+
+### Problème identifié
+
+Sans protection, un utilisateur malveillant pourrait :
+
+1. Réserver une salle pour demain (remboursement 0%)
+2. Modifier la date vers dans 3 mois (remboursement 100%)
+3. Annuler immédiatement → obtenir 100% au lieu de 0%
+
+### Solution implémentée
+
+**Champ `originalDate`** dans la table Bookings:
+
+- Stocke la date initiale de la réservation lors de la création
+- Préservé lors des modifications (utilisateur ou admin)
+- Le calcul de remboursement utilise **toujours** `originalDate` au lieu de `date`
+
+### Résultat
+
+✅ L'utilisateur peut modifier sa réservation autant de fois qu'il veut  
+✅ Mais le remboursement sera toujours calculé sur la date **originale**  
+❌ Impossible de manipuler le système pour obtenir un meilleur remboursement
+
+---
+
+## API Endpoints
+
+### Public Routes
+
+```
+GET  /api/rooms              # Liste des salles actives
+GET  /api/rooms/:id          # Détail d'une salle + disponibilités (7 jours)
+GET  /health                 # Health check
+```
+
+### Protected Routes (Authentication Required)
+
+```
+POST   /api/bookings                    # Créer une réservation
+GET    /api/bookings/my-bookings        # Mes réservations
+GET    /api/bookings/:id                # Détail d'une réservation
+PUT    /api/bookings/:id                # Modifier une réservation
+DELETE /api/bookings/:id                # Annuler une réservation (avec remboursement)
+
+POST   /api/payment/create-checkout     # Créer session Stripe
+GET    /api/payment/verify/:sessionId   # Vérifier paiement
+POST   /api/payment/refund              # Demander un remboursement
+POST   /api/payment/calculate-refund    # Calculer montant remboursable
+```
+
+### Admin Routes (Role: admin Required)
+
+```
+# Salles
+GET    /api/admin/rooms                 # Toutes les salles (actives + inactives)
+POST   /api/admin/rooms                 # Créer une salle
+PUT    /api/admin/rooms/:id             # Modifier une salle
+PATCH  /api/admin/rooms/:id/toggle      # Activer/désactiver une salle
+DELETE /api/admin/rooms/:id             # Supprimer une salle (si désactivée + 0 réservation)
+
+# Réservations
+GET    /api/admin/bookings              # Toutes les réservations (avec filtres)
+PUT    /api/admin/bookings/:id          # Modifier n'importe quelle réservation (sans userId check)
+PATCH  /api/admin/bookings/:id/status   # Changer le statut
+DELETE /api/admin/bookings/:id          # Annuler avec remboursement automatique
+
+# Statistiques
+GET    /api/admin/statistics            # Dashboard stats (revenus, bookings, top rooms)
+```
+
+### Webhook Routes (Stripe Signature Verification)
+
+```
+POST /api/webhooks/stripe               # Webhook Stripe (checkout.completed, payment.failed, charge.refunded)
+```
 
 ---
 
@@ -318,6 +408,10 @@ docker compose exec api npm run reminders   # Envoyer les rappels J-1
 
 # Reconstruire après modifications
 docker compose up -d --build
+
+# Forcer la régénération du client Prisma
+docker compose exec api npx prisma generate
+docker compose restart api
 ```
 
 ---

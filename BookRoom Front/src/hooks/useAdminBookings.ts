@@ -9,6 +9,10 @@ interface UseAdminBookingsResult {
   refetch: () => Promise<void>;
   cancelBooking: (id: string) => Promise<void>;
   updateBookingStatus: (id: string, status: string) => Promise<void>;
+  updateBooking: (
+    id: string,
+    data: { date?: string; startTime?: string; endTime?: string; numberOfPeople?: number }
+  ) => Promise<void>;
 }
 
 export function useAdminBookings(): UseAdminBookingsResult {
@@ -37,7 +41,7 @@ export function useAdminBookings(): UseAdminBookingsResult {
 
   const cancelBooking = async (id: string): Promise<void> => {
     try {
-      const response = await apiService.cancelBooking(id);
+      const response = await apiService.cancelBookingAdmin(id);
       if (response.success) {
         await fetchBookings();
       } else {
@@ -61,6 +65,24 @@ export function useAdminBookings(): UseAdminBookingsResult {
     }
   };
 
+  const updateBooking = async (
+    id: string,
+    data: { date?: string; startTime?: string; endTime?: string; numberOfPeople?: number }
+  ): Promise<void> => {
+    try {
+      const response = await apiService.updateBookingAdmin(id, data);
+      if (response.success) {
+        await fetchBookings();
+      } else {
+        throw new Error(response.error?.message || 'Erreur lors de la modification');
+      }
+    } catch (err) {
+      throw err instanceof Error
+        ? err
+        : new Error('Erreur lors de la modification de la réservation');
+    }
+  };
+
   useEffect(() => {
     fetchBookings();
   }, []);
@@ -72,5 +94,6 @@ export function useAdminBookings(): UseAdminBookingsResult {
     refetch: fetchBookings,
     cancelBooking,
     updateBookingStatus,
+    updateBooking,
   };
 }

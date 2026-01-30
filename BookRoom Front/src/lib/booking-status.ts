@@ -79,18 +79,18 @@ export function getStatusVariant(status: string): BookingStatusBadgeVariant {
  * Vérifier si une réservation peut être annulée
  */
 export function canCancelBooking(booking: Booking): boolean {
-  const statusLower = booking.status.toLowerCase();
+  const statusUpper = booking.status.toUpperCase();
 
   const nonCancellableStatuses = [
-    'cancelled',
-    'cancelled_by_user',
-    'cancelled_by_admin',
-    'cancelled_no_payment',
-    'completed',
-    'refunded',
+    'CANCELLED',
+    'CANCELLED_BY_USER',
+    'CANCELLED_BY_ADMIN',
+    'CANCELLED_NO_PAYMENT',
+    'COMPLETED',
+    'REFUNDED',
   ];
 
-  return !nonCancellableStatuses.includes(statusLower);
+  return !nonCancellableStatuses.includes(statusUpper);
 }
 
 /**

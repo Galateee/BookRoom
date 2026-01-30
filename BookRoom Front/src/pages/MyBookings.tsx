@@ -81,7 +81,11 @@ export function MyBookings() {
       {!loading && !error && bookings && bookings.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {bookings.map((booking) => (
-            <BookingCard key={booking.id || booking.bookingId} booking={booking} />
+            <BookingCard
+              key={booking.id || booking.bookingId}
+              booking={booking}
+              onUpdate={fetchBookings}
+            />
           ))}
         </div>
       )}

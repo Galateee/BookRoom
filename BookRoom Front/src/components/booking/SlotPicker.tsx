@@ -9,10 +9,33 @@ import { cn } from '@/lib/utils';
 interface SlotPickerProps {
   bookedSlots?: BookedSlot[];
   onSlotSelect: (date: string, startTime: string, endTime: string) => void;
+  initialDate?: string;
+  initialStartTime?: string;
+  initialEndTime?: string;
 }
 
-export function SlotPicker({ bookedSlots = [], onSlotSelect }: SlotPickerProps) {
-  const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
+export function SlotPicker({
+  bookedSlots = [],
+  onSlotSelect,
+  initialDate,
+  initialStartTime,
+  initialEndTime,
+}: SlotPickerProps) {
+  const getInitialSlots = () => {
+    if (!initialStartTime || !initialEndTime) return [];
+
+    const startHour = parseInt(initialStartTime.split(':')[0]);
+    const endHour = parseInt(initialEndTime.split(':')[0]);
+    const slots: string[] = [];
+
+    for (let h = startHour; h < endHour; h++) {
+      slots.push(`${h.toString().padStart(2, '0')}:00`);
+    }
+
+    return slots;
+  };
+
+  const [selectedSlots, setSelectedSlots] = useState<string[]>(getInitialSlots());
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartSlot, setDragStartSlot] = useState<string | null>(null);
 
@@ -67,7 +90,7 @@ export function SlotPicker({ bookedSlots = [], onSlotSelect }: SlotPickerProps) 
   }, [bookedSlots]);
 
   const [selectedDay, setSelectedDay] = useState<string>(
-    availability[0]?.date || new Date().toISOString().split('T')[0]
+    initialDate || availability[0]?.date || new Date().toISOString().split('T')[0]
   );
 
   if (!availability || availability.length === 0) {
