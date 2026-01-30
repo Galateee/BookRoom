@@ -1,10 +1,10 @@
-# BookRoom - Configuration Docker Complète
+# Bookly - Configuration Docker Complète
 
 services:
   # Base de données PostgreSQL
   postgres:
     image: postgres:15-alpine
-    container_name: bookroom-postgres
+    container_name: bookly-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -13,21 +13,21 @@ services:
     ports:
       - "${POSTGRES_PORT:-5433}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - bookroom-network
+      - bookly-network
 
   # Backend API Express + Prisma
   api:
     build:
-      context: ./BookRoom API
+      context: ./Bookly API
       dockerfile: Dockerfile
-    container_name: bookroom-api
+    container_name: bookly-api
     restart: unless-stopped
     ports:
       - "${API_PORT:-3001}:3001"
@@ -46,18 +46,18 @@ services:
         condition: service_healthy
     volumes:
       # Hot reload - Monte le code source en lecture seule
-      - ./BookRoom API/src:/app/src:ro
-      - ./BookRoom API/prisma:/app/prisma:ro
+      - ./Bookly API/src:/app/src:ro
+      - ./Bookly API/prisma:/app/prisma:ro
     networks:
-      - bookroom-network
+      - bookly-network
     command: sh -c "npx prisma migrate deploy && npm run dev"
 
   # Frontend React + Vite
   frontend:
     build:
-      context: ./BookRoom Front
+      context: ./Bookly Front
       dockerfile: Dockerfile
-    container_name: bookroom-frontend
+    container_name: bookly-frontend
     restart: unless-stopped
     ports:
       - "${FRONTEND_PORT:-5173}:5173"
@@ -67,16 +67,16 @@ services:
       - api
     volumes:
       # Hot reload - Monte le code source en lecture seule
-      - ./BookRoom Front/src:/app/src:ro
-      - ./BookRoom Front/public:/app/public:ro
+      - ./Bookly Front/src:/app/src:ro
+      - ./Bookly Front/public:/app/public:ro
     networks:
-      - bookroom-network
+      - bookly-network
 
 volumes:
-  postgres_data:
-    name: bookroom-postgres-data
+  postgres-data:
+    name: bookly-postgres-data
 
 networks:
-  bookroom-network:
-    name: bookroom-network
+  bookly-network:
+    name: bookly-network
     driver: bridge

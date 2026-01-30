@@ -1,4 +1,4 @@
-# Dockerfile pour le Backend BookRoom API
+# Dockerfile pour le Backend Bookly API
 FROM node:20-bookworm-slim
 
 # Installer OpenSSL et les dépendances nécessaires pour Prisma

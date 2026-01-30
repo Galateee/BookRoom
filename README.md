@@ -1,6 +1,6 @@
 <div align="center">
 
-# BookRoom
+# Bookly
 
 **Système moderne de réservation de salles de réunion**
 
@@ -18,7 +18,7 @@
 
 ## À propos
 
-**BookRoom** est une application full-stack de gestion et réservation de salles de réunion avec système de paiement intégré. Conçue pour simplifier la réservation d'espaces professionnels, elle offre une interface moderne et intuitive pour les utilisateurs et un tableau de bord complet pour les administrateurs.
+**Bookly** est une application full-stack de gestion et réservation de salles de réunion avec système de paiement intégré. Conçue pour simplifier la réservation d'espaces professionnels, elle offre une interface moderne et intuitive pour les utilisateurs et un tableau de bord complet pour les administrateurs.
 
 ### Points forts
 
@@ -45,8 +45,8 @@
 
 ```bash
 # Cloner le projet
-git clone https://github.com/Galateee/BookRoom.git
-cd "BookRoom"
+git clone https://github.com/Galateee/Bookly.git
+cd "Bookly"
 
 # Configurer les variables d'environnement
 cp .env.example .env
@@ -132,9 +132,9 @@ docker compose up -d
 ## Structure du projet
 
 ```
-BookRoom/
+Bookly/
 │
-├── BookRoom Front/              # Frontend React
+├── Bookly Front/              # Frontend React
 │   ├── src/
 │   │   ├── components/            # Composants réutilisables
 │   │   │   ├── auth/              # Auth provider, routes protégées
@@ -148,7 +148,7 @@ BookRoom/
 │   │   └── types/                 # Types TypeScript
 │   └── .env.example
 │
-└── BookRoom API/                # Backend Node.js
+└── Bookly API/                # Backend Node.js
     ├── src/
     │   ├── controllers/           # Logique métier
     │   ├── middlewares/           # Auth, error handling
@@ -168,7 +168,7 @@ BookRoom/
 
 ### Variables d'environnement
 
-`BookRoom/.env`
+`Bookly/.env`
 
 ```env
 # -----------------------------------------------------------------------------
@@ -176,7 +176,7 @@ BookRoom/
 # -----------------------------------------------------------------------------
 POSTGRES_PASSWORD=changez_ce_mot_de_passe
 
-DATABASE_URL=postgresql://bookroom:changez_ce_mot_de_passe@postgres:5432/bookroom
+DATABASE_URL=postgresql://bookly:changez_ce_mot_de_passe@postgres:5432/bookly
 
 # -----------------------------------------------------------------------------
 # Clerk Authentication (https://dashboard.clerk.com)
@@ -204,7 +204,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 GMAIL_USER=votre.email@gmail.com
 GMAIL_APP_PASSWORD=votre_mot_de_passe_app
 
-EMAIL_FROM=BookRoom <votre.email@gmail.com>
+EMAIL_FROM=Bookly <votre.email@gmail.com>
 ADMIN_EMAIL=votre.email.admin@gmail.com
 ```
 
@@ -212,7 +212,7 @@ ADMIN_EMAIL=votre.email.admin@gmail.com
 
 ## Système d'emails
 
-BookRoom envoie **6 types d'emails automatiques** via Nodemailer + Gmail SMTP (gratuit, 500 emails/jour) :
+Bookly envoie **6 types d'emails automatiques** via Nodemailer + Gmail SMTP (gratuit, 500 emails/jour) :
 
 ### Pour les utilisateurs
 
@@ -236,7 +236,7 @@ BookRoom envoie **6 types d'emails automatiques** via Nodemailer + Gmail SMTP (g
 ```env
 GMAIL_USER=votre.email@gmail.com
 GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
-EMAIL_FROM=BookRoom <votre.email@gmail.com>
+EMAIL_FROM=Bookly <votre.email@gmail.com>
 ADMIN_EMAIL=votre.email.admin@gmail.com
 ```
 

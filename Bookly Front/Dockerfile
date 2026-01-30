@@ -1,4 +1,4 @@
-# Dockerfile pour le Frontend BookRoom
+# Dockerfile pour le Frontend Bookly
 FROM node:20-alpine
 
 WORKDIR /app

@@ -196,7 +196,7 @@ export default function AdminStatistics() {
               <div className="text-center">
                 <FontAwesomeIcon icon={faChartLine} className="h-12 w-12 mb-4 opacity-20" />
                 <p>Graphique à venir</p>
-                <p className="text-sm">Intégration avec Chart.js ou Recharts</p>
+                <p className="text-sm"></p>
               </div>
             </div>
           </CardContent>

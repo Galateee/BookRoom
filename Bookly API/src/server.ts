@@ -63,7 +63,7 @@ app.use(errorHandler);
 
 // Démarrer le serveur
 app.listen(PORT, () => {
-  console.log(`🚀 BookRoom API running on http://localhost:${PORT}`);
+  console.log(`🚀 Bookly API running on http://localhost:${PORT}`);
   console.log(`📚 Environment: ${process.env.NODE_ENV}`);
   console.log(`💳 Stripe Mode: ${process.env.STRIPE_MODE || "test"}`);
 });

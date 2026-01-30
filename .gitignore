@@ -1,4 +1,4 @@
-# 🐳 BookRoom - .gitignore
+# Bookly - .gitignore
 
 
 # Backups Git temporaires
@@ -24,62 +24,62 @@ docker-compose.override.yml
 Thumbs.db
 
 # Dependencies
-BookRoom Front/node_modules/
-BookRoom Front/npm-debug.log*
-BookRoom Front/yarn-debug.log*
-BookRoom Front/yarn-error.log*
-BookRoom Front/pnpm-debug.log*
-BookRoom Front/lerna-debug.log*
+Bookly Front/node_modules/
+Bookly Front/npm-debug.log*
+Bookly Front/yarn-debug.log*
+Bookly Front/yarn-error.log*
+Bookly Front/pnpm-debug.log*
+Bookly Front/lerna-debug.log*
 
 # Build outputs
-BookRoom Front/dist/
-BookRoom Front/dist-ssr/
-BookRoom Front/build/
-BookRoom Front/.next/
-BookRoom Front/out/
+Bookly Front/dist/
+Bookly Front/dist-ssr/
+Bookly Front/build/
+Bookly Front/.next/
+Bookly Front/out/
 
 # Environment variables
-BookRoom Front/.env
-BookRoom Front/.env.local
-BookRoom Front/.env*.local
-BookRoom Front/.env.production
+Bookly Front/.env
+Bookly Front/.env.local
+Bookly Front/.env*.local
+Bookly Front/.env.production
 
 # Logs
-BookRoom Front/logs/
-BookRoom Front/*.log
+Bookly Front/logs/
+Bookly Front/*.log
 
 # Test coverage
-BookRoom Front/coverage/
+Bookly Front/coverage/
 
 # Dependencies
-BookRoom API/node_modules/
-BookRoom API/npm-debug.log*
-BookRoom API/yarn-debug.log*
-BookRoom API/yarn-error.log*
+Bookly API/node_modules/
+Bookly API/npm-debug.log*
+Bookly API/yarn-debug.log*
+Bookly API/yarn-error.log*
 
 # Build output
-BookRoom API/dist/
+Bookly API/dist/
 
 # Environment variables
-BookRoom API/.env
-BookRoom API/.env.local
-BookRoom API/.env*.local
+Bookly API/.env
+Bookly API/.env.local
+Bookly API/.env*.local
 
 # Prisma
-BookRoom API/generated/prisma/
-BookRoom API/prisma/migrations/dev.db
+Bookly API/generated/prisma/
+Bookly API/prisma/migrations/dev.db
 
 # Database
-BookRoom API/*.db
-BookRoom API/*.sqlite
-BookRoom API/*.sqlite3
+Bookly API/*.db
+Bookly API/*.sqlite
+Bookly API/*.sqlite3
 
 # Logs
-BookRoom API/logs/
-BookRoom API/*.log
+Bookly API/logs/
+Bookly API/*.log
 
 # Test coverage
-BookRoom API/coverage/
+Bookly API/coverage/
 .nyc_output/
 
 # Temporary files

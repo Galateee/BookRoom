@@ -20,7 +20,7 @@ export function Header() {
               className="h-6 w-6 text-primary transition-transform group-hover:scale-110"
             />
             <span className="font-bold text-xl bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              BookRoom
+              Bookly
             </span>
           </Link>
 

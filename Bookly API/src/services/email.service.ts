@@ -1,8 +1,8 @@
 import nodemailer from "nodemailer";
 import type { Booking, Room } from "@prisma/client";
 
-const FROM_EMAIL = process.env.EMAIL_FROM || "BookRoom <noreply@bookroom.local>";
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@bookroom.local";
+const FROM_EMAIL = process.env.EMAIL_FROM || "Bookly <noreply@bookly.local>";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@bookly.local";
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 // Créer le transporteur Nodemailer avec Gmail
@@ -166,7 +166,7 @@ class EmailService {
               </ul>
               
               <p style="margin: 0; font-size: 14px; color: #999;">
-                À bientôt sur BookRoom !
+                À bientôt sur Bookly !
               </p>
             </td>
           </tr>
@@ -178,7 +178,7 @@ class EmailService {
                 Cet email a été envoyé automatiquement, merci de ne pas y répondre.
               </p>
               <p style="margin: 0; font-size: 12px; color: #999;">
-                © ${new Date().getFullYear()} BookRoom - Tous droits réservés
+                © ${new Date().getFullYear()} Bookly - Tous droits réservés
               </p>
             </td>
           </tr>
@@ -263,7 +263,7 @@ class EmailService {
           <tr>
             <td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;">
               <p style="margin: 0; font-size: 12px; color: #999;">
-                © ${new Date().getFullYear()} BookRoom
+                © ${new Date().getFullYear()} Bookly
               </p>
             </td>
           </tr>
@@ -345,7 +345,7 @@ class EmailService {
               }
               
               <p style="margin: 0 0 20px; font-size: 14px; color: #666;">
-                Nous espérons vous revoir bientôt sur BookRoom.
+                Nous espérons vous revoir bientôt sur Bookly.
               </p>
               
               <table width="100%" cellpadding="0" cellspacing="0">
@@ -363,7 +363,7 @@ class EmailService {
           <tr>
             <td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;">
               <p style="margin: 0; font-size: 12px; color: #999;">
-                © ${new Date().getFullYear()} BookRoom
+                © ${new Date().getFullYear()} Bookly
               </p>
             </td>
           </tr>
@@ -453,7 +453,7 @@ class EmailService {
           <tr>
             <td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;">
               <p style="margin: 0; font-size: 12px; color: #999;">
-                © ${new Date().getFullYear()} BookRoom
+                © ${new Date().getFullYear()} Bookly
               </p>
             </td>
           </tr>
